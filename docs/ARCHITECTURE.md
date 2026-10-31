@@ -32,7 +32,7 @@ This document explains **every part of the system as it exists in the code** (br
 5. [Data model](#5-data-model)
 6. [Users, roles and security](#6-users-roles-and-security)
 7. [The validation engine (core)](#7-the-validation-engine-core)
-8. [Rule catalogue (25 rules)](#8-rule-catalogue-25-rules)
+8. [Rule catalogue (26 rules)](#8-rule-catalogue-26-rules)
 9. [Bulk import pipeline](#9-bulk-import-pipeline)
 10. [Seat ledger and excess-intake detection](#10-seat-ledger-and-excess-intake-detection)
 11. [Identity resolution (duplicate people)](#11-identity-resolution-duplicate-people)
@@ -101,7 +101,7 @@ flowchart LR
 **Architectural style:** a **modular monolith**.
 - One deployable FastAPI process serves both the JSON API and the built React app.
 - Business logic lives in `backend/app/modules/`, one file per concern.
-- **The one hard rule is that only the validation engine writes students and enrolments.** Upload, manual entry, corrections and the ERP API all go through it, so every path applies the same 25 rules.
+- **The one hard rule is that only the validation engine writes students and enrolments.** Upload, manual entry, corrections and the ERP API all go through it, so every path applies the same 26 rules.
 
 **Size at audit time:**
 
@@ -111,7 +111,7 @@ flowchart LR
 | Frontend | 2,633 | TS/TSX |
 | Tests | 1,395 | |
 
-The API has 69 endpoints plus 3 framework routes (docs, OpenAPI, SPA fallback).
+The API has 70 endpoints plus 3 framework routes (docs, OpenAPI, SPA fallback).
 
 ## 3. Repository layout
 
@@ -140,7 +140,7 @@ backend/app/
     views.py         Role-aware serialisation (APAAR masking)
     events.py        In-process SSE bus
     api_*.py         11 HTTP routers (one per area)
-backend/tests/       pytest suite (91 test functions, 109 cases)
+backend/tests/       pytest suite (110 test functions, 128 cases)
 frontend/src/        React 18 + TypeScript SPA (22 pages)
 api/index.py         Vercel serverless entry
 scripts/             run_demos.py, ui_tour.py, vercel_build.sh
@@ -168,7 +168,8 @@ docs/                Design, API, traceability, test report, audit
 | Setting | Default |
 |---|---|
 | Token lifetime | 120 min |
-| Max upload | 2 MB / 5,000 rows |
+| Max upload | 2 MB / 5,000 rows (`MAX_UPLOAD_ROWS`; 1,000 on Vercel) |
+| `DEMO_MODE` | `0`; `1` lists demo accounts on the login page |
 | Current year | `2026-27` |
 | Deadline | `2026-11-30` |
 | Login rate | 30/min per IP |
@@ -217,7 +218,7 @@ erDiagram
 | `enrolments` | A student in a programme-year: roll number, seat category, admission date, status (PROVISIONAL / ACTIVE / WITHDRAWN / TRANSFERRED_OUT / GRADUATED / CANCELLED), source, version |
 | `import_jobs` | One upload: file name, SHA-256, year, status (PREVIEW / COMMITTING / PARTIALLY_COMMITTED / COMMITTED / DISCARDED), counts |
 | `import_rows` | Each uploaded row: data, findings, status, link to the created enrolment |
-| `validation_rules` | The 25 rules: severity, stage, enabled, locked, remediation text |
+| `validation_rules` | The 26 rules: severity, stage, enabled, locked, remediation text |
 | `validation_issues` | **Flags**: rule, subject, institution, year, evidence, status, assignee |
 | `issue_events` | Every action on a flag (who, role, action, note) |
 | `record_revisions` | Before/after field changes for students and enrolments, with reason and actor |
@@ -265,8 +266,8 @@ erDiagram
 | CSV safety | Cells starting with `= + - @` are neutralised | `csvout.py` |
 
 **Known gaps** (details in [audit doc 07](architecture-audit/07-security-and-privacy-assessment.md)):
-- The login response time reveals whether an email exists.
-- `/auth/demo-accounts` is public.
+- ~~The login response time reveals whether an email exists.~~ Fixed: unknown emails also run a password hash.
+- ~~`/auth/demo-accounts` is public.~~ Fixed: served only when `DEMO_MODE=1`.
 - The rate limiter is in memory.
 - Tokens can't be revoked before expiry.
 - There is no MFA.
@@ -318,7 +319,7 @@ flowchart LR
 - Rule *sets* with versions and effective dates (v3).
 - Per-row repository queries aren't batched; this is the main cost in a large commit.
 
-## 8. Rule catalogue (25 rules)
+## 8. Rule catalogue (26 rules)
 
 **Status: BUILT** (`modules/rules.py`)
 
@@ -340,6 +341,7 @@ Every rule has a stable ID, a severity, a stage, a description and **remediation
 | ROW | R012_PROGRAMME | ERROR | Programme not approved for this institution/year |
 | ROW | R013_CATEGORY_CONSISTENCY | ERROR | Seat category conflicts with nationality (e.g. NRI seat for a foreign national) |
 | ROW | R014_YEAR_MISMATCH | ERROR | Row year differs from the upload year |
+| ROW | R015_MINOR_GUARDIAN_CONSENT | REVIEW | Student under 18 today without recorded guardian consent. Sharing and consent-based verification are held (409) until the institution records it |
 | FILE | F001_DUP_APAAR_IN_FILE 🔒 | ERROR | Same APAAR ID twice in one file |
 | FILE | F002_DUP_ROLL_IN_FILE 🔒 | ERROR | Same roll number twice in one file |
 | FILE | F003_POSSIBLE_DUP_IN_FILE | WARNING | Same name + DOB, different APAAR IDs |
@@ -352,9 +354,7 @@ Every rule has a stable ID, a severity, a stage, a description and **remediation
 | AGGREGATE | C001_EXCESS_INTAKE | REVIEW | REGULAR + NRI enrolments exceed approved intake |
 | AGGREGATE | C002_SUPERNUMERARY_CAP | REVIEW | A supernumerary category exceeds its cap |
 
-**Not done:**
-- R015 (guardian consent for under-18s) from v3.
-- v3 numbers some rules differently from the code (see the audit).
+**Not done:** v3 numbers some rules differently from the code (see the audit).
 
 ## 9. Bulk import pipeline
 
@@ -408,10 +408,9 @@ sequenceDiagram
 | Preview | 5.7 s | 11.9 s |
 | Commit | 23.2 s | 48.8 s |
 
-**Not done:**
-- Background processing: commit runs inside the HTTP request.
-- Zip/XML-bomb protection for XLSX.
-- Rows are fully read before the 5,000-row cap applies.
+**Upload hardening:** before openpyxl opens a workbook, the zip is rejected if it unpacks to more than 50 MB or more than 100× its compressed size, or if any XML part declares a `DOCTYPE`. Rows are read one at a time and reading stops as soon as the row limit is passed.
+
+**Not done:** background processing. Commit runs inside the HTTP request, which is why Vercel caps uploads at 1,000 rows.
 
 ## 10. Seat ledger and excess-intake detection
 
@@ -449,7 +448,7 @@ AICTE can override any cap on the Intake page.
 - It is available to institution users and to ERPs through the `seat:check` API scope.
 - Every question is logged in `seat_check_logs`.
 
-**Not done:** a row lock during commit. Two simultaneous commits for the last seat can both succeed.
+**Concurrency:** `run_capacity_checks` locks the programme-year's `approved_intakes` row (`SELECT … FOR UPDATE`) before counting. A second commit for the same programme waits, then counts the first one's rows, so two admissions for the last seat cannot both miss the C001 flag. Tested on PostgreSQL (`test_concurrent_commits_cannot_miss_excess_flag`); SQLite serialises writers anyway.
 
 ## 11. Identity resolution (duplicate people)
 
@@ -611,9 +610,10 @@ Each check returns a plain-English sentence. Rate limit: 60/min per IP.
 4. If approved, the verifier sees the agreed fields: name, masked APAAR ID, institutions, programmes, years, statuses.
 5. Verifiers are limited to 30 requests per hour.
 
+Approving a request for a student under 18 is held until the institution records guardian consent (R015).
+
 **Not done:**
 - Consent revocation.
-- Guardian consent for minors.
 - Verifier organisation approval.
 - A student-visible access log.
 
@@ -791,11 +791,12 @@ The fix (same-transaction writes plus signed checkpoints) is in audit docs 07 an
 
 ## 24. Testing and quality gates
 
-**Status: BUILT locally; no CI**
+**Status: BUILT, with CI** (`.github/workflows/ci.yml`: ruff, pytest on SQLite and PostgreSQL 16, `scripts/check_claims.py`, frontend typecheck and build)
 
-| Gate | Command | Result at audit |
+| Gate | Command | Result |
 |---|---|---|
-| Backend tests | `make test` (pytest, isolated temp DB) | **109 passed** on SQLite (67 s) and on PostgreSQL 16 (130 s) |
+| Backend tests | `make test` (pytest, isolated temp DB) | **128 passed** on PostgreSQL 16; on SQLite 127 passed, 1 skipped (the PostgreSQL-only lock test) |
+| Claims register | `python scripts/check_claims.py` | OK (36 entries) |
 | Lint | `make lint` (ruff) | Pass |
 | Types | `make typecheck` (tsc) | Pass |
 | Demos | `make demos` | 29/29 checks pass; audit chain valid |
@@ -805,19 +806,18 @@ The fix (same-transaction writes plus signed checkpoints) is in audit docs 07 an
 
 | File | Cases | Covers |
 |---|---|---|
-| `test_rules.py` | 27 | Every rule |
-| `test_ledger.py` | 13 | Seat maths, caps, transitions |
-| `test_platform.py` | 12 | Audit chain, events, integration, idempotency |
-| `test_security.py` | 11 | Roles, scoping, masking, lockout, CSV injection |
-| `test_credentials.py` | 9 | Issue, disclose, tamper, revoke |
-| `test_imports.py` | 7 | Upload, correct, partial commit, retry |
+| `test_rules.py` | 41 | Every rule, including R015 and its date boundaries |
+| `test_ledger.py` | 21 | Seat maths, caps, transitions, concurrent capacity checks (PostgreSQL) |
+| `test_security.py` | 14 | Roles, scoping, masking, lockout, login timing, `DEMO_MODE` |
+| `test_platform.py` | 13 | Audit chain, events, integration, idempotency, row-cap config |
+| `test_imports.py` | 12 | Upload, correct, partial commit, retry, zip/entity bombs, row cap |
+| `test_credentials.py` | 10 | Issue, disclose, tamper, revoke, minor hold |
+| `test_claims.py` | 5 | Claims checker and `/system/status` |
 | `test_identity.py` | 6 | Name matching |
 | `test_corrections.py` | 5 | Student correction flow |
 | `test_demo_b.py` | 1 | Demo B end to end |
 
-**Not done:**
-- CI (GitHub Actions).
-- Concurrency, fuzz, cross-tenant and load tests.
+**Not done:** fuzz, generated cross-tenant and load tests.
 
 ## 25. Deployment
 
@@ -845,7 +845,8 @@ All paths are under `/api/v1` unless shown otherwise. The interactive docs are a
 
 | Area | Endpoints |
 |---|---|
-| **Auth** | `POST /auth/login` · `GET /auth/me` · `POST /auth/stream-token` · `GET /auth/demo-accounts` |
+| **Auth** | `POST /auth/login` · `GET /auth/me` · `POST /auth/stream-token` · `GET /auth/demo-accounts` (only when `DEMO_MODE=1`) |
+| **System** | `GET /system/status` (public feature-status register) |
 | **Registry** | `GET /config` · `GET /institutions` · `GET /programmes` · `POST /intakes` · `PATCH /intakes/{id}/quotas/{category}` · `POST /intakes/{id}/submit` · `POST /seat-check` · `GET /events` (SSE) · `GET /rules` · `PATCH /rules/{rule_id}` · `GET /notifications` |
 | **Imports** | `GET /imports/template.csv` · `GET /imports/template.xlsx` · `POST /imports` · `GET /imports` · `GET /imports/{id}` · `PATCH /imports/{id}/rows/{row}` · `POST /imports/{id}/rows/{row}/exclude` · `POST /imports/{id}/bulk-fix` · `POST /imports/{id}/commit` · `POST /imports/{id}/discard` · `GET /imports/{id}/report.csv` |
 | **Records** | `GET /enrolments` · `POST /enrolments` · `GET /enrolments/{id}` · `PATCH /enrolments/{id}` · `POST /enrolments/{id}/status` · `GET /identity/candidates` · `POST /identity/candidates/{id}/decision` |
@@ -862,13 +863,12 @@ More detail on request and response shapes: [`API_DESIGN.md`](API_DESIGN.md).
 
 ## 27. What is not built
 
+Done since the audit: the claims register (`/#/status`), upload hardening, login timing and `DEMO_MODE`, the capacity-check lock, R015 and CI.
+
 | Capability | Why it matters | Where planned |
 |---|---|---|
-| Feature-status (claims) register checked in CI | Keeps documents honest | Audit roadmap P0-1 |
 | Database migrations (Alembic) | Safe schema changes | P0-7 |
 | Same-transaction audit + signed checkpoints | No lost or truncated audit | P0-4, P1-8 |
-| Row lock on seat capacity | Last-seat race | P0-5 |
-| Guardian consent for minors (R015) | DPDP | P0-8 |
 | Background jobs + outbox + webhooks | Large commits, retries, integrations | P1-1, P2-8 |
 | Share codes, key registry, status list | Revocable sharing, key rotation | P1-3, P1-9 |
 | Versioned rule sets with impact preview | Safe rule changes mid-season | P1-10 |

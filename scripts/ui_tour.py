@@ -53,7 +53,7 @@ def main() -> int:
             errors: list[str] = []
             page.on("console", lambda m, errors=errors: m.type == "error" and errors.append(m.text))
             page.on("pageerror", lambda e, errors=errors: errors.append(str(e)))
-            for path in ("/login", "/verify"):
+            for path in ("/login", "/verify", "/status"):
                 page.goto(f"{args.base}/#{path}")
                 page.wait_for_load_state("networkidle")
                 page.screenshot(path=str(SHOTS / f"public{path.replace('/', '_')}_{w}.png"), full_page=True)

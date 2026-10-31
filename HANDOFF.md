@@ -48,6 +48,17 @@ Optional next: a UI toggle for the APAAR adapter "unavailable" mode (R008 demo);
 
 Frontend: `frontend/src` (App.tsx routes and role nav; api.ts fetch, downloads and SSE hook; components/SeatStrip.tsx; pages/*). Build with `make build`; FastAPI serves `frontend/dist`.
 
+## Prototype completion (31 Oct 2026)
+
+After the architecture audit (`docs/architecture-audit/`), the plan `docs/superpowers/plans/2026-10-31-prototype-completion.md` was executed:
+- **Claims register:** `backend/app/feature_status.yaml` is the single statement of what is built, simulated, not built or external. `scripts/check_claims.py` checks its routes and tests against the code (CI), and the public page `/#/status` shows it. Update the YAML whenever you add or remove a capability.
+- **Upload hardening:** zip/entity bombs are rejected before parsing; rows stream and stop at the cap.
+- **Auth:** unknown emails run a dummy password hash; `/auth/demo-accounts` only when `DEMO_MODE=1`. `make run`, `make dev` and docker-compose set it; **a Vercel deploy must set `DEMO_MODE=1` and `MAX_UPLOAD_ROWS=1000`**.
+- **Capacity lock:** `run_capacity_checks` locks the programme-year intake row (PostgreSQL test in `test_ledger.py`).
+- **R015:** under-18s without `guardian_consent_recorded` get a REVIEW flag, and sharing or approving verification is held (409, `held: "R015"`). Demo account `student.sneha@demo.local` is such a minor.
+- **CI:** `.github/workflows/ci.yml`.
+- Schema changed (`students.guardian_consent_recorded`); there are no migrations, so reseed (`python -m app.seed --reset`) and deploy only to a fresh database.
+
 ## Code map (backend/app)
 - `config.py`: settings; secrets are generated into `var/`; `APAAR_TODAY` overrides today's date for tests.
 - `db.py`: engine and session. `after_commit()` hooks run only after the outermost commit; savepoint commits are skipped. That guard fixed a SQLite "database is locked" deadlock.
@@ -55,7 +66,7 @@ Frontend: `frontend/src` (App.tsx routes and role nav; api.ts fetch, downloads a
 - `security.py`: PBKDF2 210k, HS256 JWT, Actor model (user or API-key client), masking, `apaar_ref` HMAC, rate limiter, `ApiError`.
 - `audit.py`: hash chain. Events are buffered per session and appended after commit under a process lock. DENIED/FAILED events are written even on rollback. Raw 12-digit IDs are scrubbed from details.
 - `modules/normalize.py`: template columns, aliases, R001/R002.
-- `modules/rules.py`: the catalogue. It has 25 rules because I added `R009_DUPLICATE_ENROLMENT` (same student, programme and year under a different roll number). Locked rules: R001, R002, D002, F001, F002.
+- `modules/rules.py`: the catalogue. It has 26 rules: `R009_DUPLICATE_ENROLMENT` (same student, programme and year under a different roll number) and `R015_MINOR_GUARDIAN_CONSENT` were added to the brief's list. Locked rules: R001, R002, D002, F001, F002.
 - `modules/engine.py`: `validate_rows()` and `commit_values()`. This is the only writer of students and enrolments. It handles the §4 pitfalls (pending-APAAR re-submit, self-findings filter).
 - `modules/ledger.py`: pure seat rules (`position_from_counts`, `default_caps`, `seat_check`) and status transitions.
 - `modules/identity.py`: phonetic fold, Jaro–Winkler, weights, candidates (≥9 gives D005; 6–9 are listed only).
@@ -74,6 +85,7 @@ Frontend: `frontend/src` (App.tsx routes and role nav; api.ts fetch, downloads a
   - Four Brahmaputra registry spellings differ (R007).
   - Yamuna has declared its submission.
   - Ananya Iyer has a student account and one credential.
+  - Sneha Patil and Arjun Gowda (Brahmaputra DIP-ME, born 2010) have no recorded guardian consent (R015); Sneha has a student account and one credential.
   - The Kaveri ERP key is in `var/demo_api_key.txt`.
 
 ## Decisions and deviations (keep docs consistent with these)

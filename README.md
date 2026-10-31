@@ -104,7 +104,7 @@ cd frontend && npm run dev     # Vite on http://localhost:5173 (proxies /api to 
 
 ## Demo accounts
 
-All accounts use the password **`Demo@2026`**. The login page has a one-click account picker.
+All accounts use the password **`Demo@2026`**. When `DEMO_MODE=1` (set by `make run`, `make dev` and docker-compose), the login page has a one-click account picker; otherwise type the email and password.
 
 | Role | Email | Lands on |
 |---|---|---|
@@ -115,6 +115,7 @@ All accounts use the password **`Demo@2026`**. The login page has a one-click ac
 | Institution nodal officer | `kaveri.admin@demo.local` (also `godavari`, `narmada`, `yamuna`, `brahmaputra`) | Institution dashboard; can declare submission, issue/revoke signed records, manage API keys |
 | Institution data-entry staff | `kaveri.staff@demo.local` (same five institutions) | Upload, fix, commit, correct records |
 | Student | `student.ananya@demo.local` | Own record, consent requests, sharing, correction requests |
+| Student under 18 | `student.sneha@demo.local` | Sharing and consent are held until Brahmaputra records guardian consent (rule R015) |
 
 The seed also writes an API key for Kaveri's admission system (scopes `enrolments:write`, `seat:check`) to `var/demo_api_key.txt`.
 
@@ -250,7 +251,7 @@ flowchart LR
 
 ## Validation rules
 
-There are 25 rules with stable IDs, stored as data. AICTE can enable or disable them and change severity, except for the locked integrity rules (R001, R002, D002, F001, F002).
+There are 26 rules with stable IDs, stored as data. AICTE can enable or disable them and change severity, except for the locked integrity rules (R001, R002, D002, F001, F002).
 
 | Severity | Effect |
 |---|---|
@@ -260,7 +261,7 @@ There are 25 rules with stable IDs, stored as data. AICTE can enable or disable 
 
 | Group | Rules |
 |---|---|
-| Row (R) | required fields, formats, APAAR missing / pending / malformed / not found / mismatched / unverified, duplicate enrolment, impossible or unusual dates, programme not approved, seat category vs nationality, wrong year |
+| Row (R) | required fields, formats, APAAR missing / pending / malformed / not found / mismatched / unverified, duplicate enrolment, impossible or unusual dates, programme not approved, seat category vs nationality, wrong year, student under 18 without recorded guardian consent (R015) |
 | File (F) | same APAAR ID twice, same roll number twice, possible duplicate person, file uploaded before |
 | Repository (D) | updates an existing record, roll number belongs to someone else, active at another institution, different name/DOB on file, possible same person under another ID |
 | Capacity (C) | over approved intake, supernumerary category over cap |
@@ -276,15 +277,20 @@ The full catalogue with descriptions and fixes is on the **Rules** page and at `
   - Passwords use PBKDF2-SHA256 with 210,000 iterations.
   - Bearer tokens are 120-minute HS256.
   - Sign-in is rate-limited, and an account locks after 5 failures.
+  - A password hash runs even for unknown emails, so response time does not reveal which emails exist.
+  - The demo-accounts list is served only when `DEMO_MODE=1`.
 - **APAAR IDs:**
   - Masked (`XXXX-XXXX-1234`) for analysts and anyone outside the owning institution.
   - Search requires the exact 12 digits; partial search is not supported.
   - Never written to logs.
 - **Uploads:**
-  - Only `.csv` and `.xlsx` (checked by file signature), up to 2 MB and 5,000 rows.
+  - Only `.csv` and `.xlsx` (checked by file signature), up to 2 MB and 5,000 rows (1,000 on Vercel; set `MAX_UPLOAD_ROWS`).
+  - Workbooks that unpack to more than 50 MB, or more than 100× their compressed size, are rejected before parsing, as is any XML with a `DOCTYPE`.
+  - Rows are read one at a time and reading stops at the row limit.
   - CSV with binary content is rejected.
   - Exports neutralise spreadsheet formula injection.
 - **Headers:** strict CSP (`script-src 'self'`), `nosniff`, frame denial, no referrer, `no-store` on the API.
+- **Minors:** students under 18 are held from sharing and consent-based verification until the institution records guardian consent (R015).
 - **Errors:** always `{"error": {"status", "message", "request_id"}}`, never stack traces.
 - **Secrets:** generated into `var/` (file mode 0600) unless supplied by environment. Only `.env.example` is committed.
 
@@ -316,7 +322,7 @@ curl -s localhost:8000/.well-known/issuer-keys
 ## Testing
 
 ```bash
-make test        # 109 backend tests against an isolated temporary database
+make test        # 128 backend tests against an isolated temporary database
 make lint        # ruff
 make typecheck   # tsc --noEmit
 make seed && make run     # terminal 1
@@ -324,7 +330,7 @@ make demos                # terminal 2: Demos A, B, C via the API, PASS/FAIL per
 make tour                 # Playwright: every page at 1360 px and 390 px; fails on console errors
 ```
 
-Latest results (fresh clone): **109 passed**, lint and typecheck clean, **all 29 demo checks passed**, and the UI tour passed with 64 page views and 0 errors. Details are in [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
+Latest results (31 Oct 2026): **128 passed on PostgreSQL 16**; on SQLite 127 passed and 1 skipped (a PostgreSQL-only concurrency test). Lint, typecheck and the claims check are clean, **all 29 demo checks passed**, and the UI tour passed with 66 page views and 0 errors with `DEMO_MODE` on and off. GitHub Actions runs the same checks on every push. Details are in [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
 
 ## Configuration
 
@@ -339,6 +345,8 @@ Everything is optional; copy `.env.example` to `.env` to override.
 | `SUBMISSION_DEADLINE` | `2026-11-30` | Shown on institution dashboards |
 | `APAAR_ADAPTER_MODE` | `simulated` | Set `unavailable` to demonstrate the "registry unavailable" warning |
 | `APAAR_TODAY` | today | Pins the date for reproducible tests |
+| `DEMO_MODE` | `0` | `1` lists the demo accounts on the login page (`make run`/`make dev`/docker-compose set it) |
+| `MAX_UPLOAD_ROWS` | `5000` (`1000` on Vercel) | Rows per upload; Vercel functions stop at 60 s |
 
 ## Project layout
 
@@ -350,9 +358,9 @@ backend/app/
     ledger.py identity.py apaar_adapter.py   seat counting, name matching, SIMULATED registry
     intake.py issues.py credentials.py analytics.py events.py views.py
     api_*.py                             one router per area (auth, registry, imports, records, issues, ...)
-backend/tests/          pytest suite (109 tests)
+backend/tests/          pytest suite (128 tests)
 frontend/src/           React app: App.tsx (routes, role menus), api.ts, components/SeatStrip.tsx, pages/
-scripts/                run_demos.py (Demos A/B/C), ui_tour.py (Playwright)
+scripts/                run_demos.py (Demos A/B/C), ui_tour.py (Playwright), check_claims.py (status register)
 sample_data/            Demo A (CSV + XLSX) and Demo B files, written by the seed
 docs/                   blueprint, build prompt, demo script, test report, traceability, API design, gap analysis
 var/                    (not committed) SQLite file, generated secrets, signing key, demo API key
@@ -360,13 +368,16 @@ var/                    (not committed) SQLite file, generated secrets, signing 
 
 ## What is live, simulated or planned
 
+The authoritative list is [`backend/app/feature_status.yaml`](backend/app/feature_status.yaml), shown in the app at **`/#/status`** (no sign-in) and checked against the code's routes and tests by `scripts/check_claims.py` in CI. Summary:
+
 | Item | State |
 |---|---|
 | Upload, validation, seat ledger, flags, dashboards, signed records, consent, audit | **Working** in the prototype |
 | APAAR registry verification | **Simulated** (synthetic registry table; a live adapter plugs into the same interface) |
 | Institution ERP push, seat-check API, live updates | **Working** |
 | AICTE approval-process intake feed, DigiLocker / NAD, degree-awarding-body feed | **Planned** (labelled "not implemented" on the Integrations page) |
-| PostgreSQL, KMS-held keys, SSO/MFA, multi-worker events | **Planned** for production; see [`docs/PRODUCTION_GAP_ANALYSIS.md`](docs/PRODUCTION_GAP_ANALYSIS.md) |
+| PostgreSQL 16 | **Working**: the full test suite runs on SQLite and PostgreSQL 16 in CI |
+| Migrations, background jobs, KMS-held keys, SSO/MFA, multi-worker events | **Planned** for production; see [`docs/PRODUCTION_GAP_ANALYSIS.md`](docs/PRODUCTION_GAP_ANALYSIS.md) |
 
 ## Documentation
 
