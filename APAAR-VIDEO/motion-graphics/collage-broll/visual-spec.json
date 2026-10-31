@@ -1,0 +1,24 @@
+{
+  "batch": "APAAR Student Register, Problem scene B-roll",
+  "aspect_ratio": "16:9",
+  "style_signature": "flat bold color field, mixed black-and-white halftone cut-outs and colored cardstock accents, crisp cut edges, cream keylines, soft paper shadows, editorial paper collage",
+  "avoid": "typography, readable letters, numerals, logos, watermark, UI, subtitles, glossy 3D, photoreal environment",
+  "items": [
+    {"id": "01-hidden-excess", "line": "Excess admissions hide inside those numbers.",
+     "visual_metaphor": "one large blank cream card stands like a shield; behind it halftone student figures stack until they spill over its top edge past a saffron limit strip",
+     "color_field": {"background_hex": "#B5481E", "accent_colors": ["cream", "navy paper", "saffron strip"]},
+     "assembly": "limit strip -> card -> figures stack -> overflow peeks above"},
+    {"id": "02-counted-twice", "line": "The same student can appear at two colleges at once.",
+     "visual_metaphor": "one halftone student portrait torn down the middle; each half pinned under a different college facade; a red thread joins the halves",
+     "color_field": {"background_hex": "#C9952B", "accent_colors": ["red thread", "cream"]},
+     "assembly": "two facades -> torn halves slide under -> pins -> thread tightens"},
+    {"id": "03-letter-and-wait", "line": "When an employer asks if a degree is real, the answer is a letter and a long wait.",
+     "visual_metaphor": "a halftone hand offers a sealed envelope towards a desk while a tall envelope stack rises beside it under a paper clock",
+     "color_field": {"background_hex": "#1F5F5B", "accent_colors": ["cream envelopes", "saffron wax seal"]},
+     "assembly": "clock -> envelope stack rises -> hand slides in -> seal stamps"},
+    {"id": "04-one-register", "line": "So we built one register.",
+     "visual_metaphor": "scattered paper pieces (student cut-outs, envelopes, facades) file into neat rows inside one large cream ledger page with a navy binding and a saffron tab",
+     "color_field": {"background_hex": "#12387A", "accent_colors": ["cream", "saffron tab"]},
+     "assembly": "binding -> page -> rows file in -> tab clicks into place"}
+  ]
+}
