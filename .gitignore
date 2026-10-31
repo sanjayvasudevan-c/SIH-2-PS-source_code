@@ -19,3 +19,7 @@ APAAR-VIDEO/remotion/out/
 APAAR-VIDEO/remotion/public/clips/
 APAAR-VIDEO/recordings/
 APAAR-VIDEO/remotion/public/audio/
+APAAR-VIDEO/apaar-register/out/
+APAAR-VIDEO/apaar-register/**/stills/
+APAAR-VIDEO/apaar-register/voices/*.wav
+APAAR-VIDEO/recordings/dom/

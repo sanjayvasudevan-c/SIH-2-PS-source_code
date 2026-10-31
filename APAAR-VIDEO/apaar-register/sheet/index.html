@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Model sheet</title>
+<style>
+@font-face{font-family:Atkinson;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2)}
+@font-face{font-family:Atkinson;font-weight:700;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2)}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#f3f6f5;font-family:Atkinson}
+canvas{position:absolute;inset:0}
+.l{position:absolute;font-size:22px;color:#4a5a70;text-align:center;width:240px}
+h1{position:absolute;left:80px;top:40px;margin:0;font-size:34px;color:#12387a}
+</style></head><body>
+<h1>Model sheet: painted admission slip (original APAAR mascot)</h1>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="labels"></div>
+<script type="module">
+import { paint, tick, sparkle, cross, SAFF, SAFF_D, CREAM, INK, NAVY } from './mascot.js';
+const c = document.getElementById('c').getContext('2d');
+const L = document.getElementById('labels');
+const cells = [
+  ['neutral', { eyes: 'n' }], ['look left', { eyes: 'l', flip: true }], ['happy', { eyes: 'happy', arms: 'up' }], ['wide / surprised', { eyes: 'wide', arms: 'hold' }],
+  ['worried', { eyes: 'worry' }], ['blink', { eyes: 'blink' }], ['walk A', { legs: 'walkA', eyes: 'r' }], ['walk B', { legs: 'walkB', eyes: 'r' }],
+  ['crouch (anticipation)', { sq: .26, eyes: 'd' }], ['jump (stretch, tucked)', { sq: -.2, legs: 'tuck', arms: 'up', eyes: 'u' }], ['point', { arms: 'point', eyes: 'r' }], ['sit / sleep', { legs: 'sit', eyes: 'shut' }],
+];
+window.render = (t) => {
+  c.clearRect(0, 0, 1920, 1080); L.innerHTML = '';
+  cells.forEach(([name, o], i) => {
+    const col = i % 6, row = Math.floor(i / 6), x = 200 + col * 300, y = 430 + row * 420;
+    // a UI "top edge" to stand on
+    c.fillStyle = '#fff'; c.strokeStyle = '#d5dedb'; c.lineWidth = 2; c.beginPath(); c.roundRect(x - 120, y, 240, 54, 6); c.fill(); c.stroke();
+    paint(c, x, y, { s: 2.2, t, ...o });
+    if (name === 'happy') sparkle(c, x + 110, y - 230, 1.4, .9);
+    L.innerHTML += `<div class="l" style="left:${x - 120}px;top:${y + 66}px">${name}</div>`;
+  });
+  // palette
+  [SAFF, SAFF_D, CREAM, INK, NAVY].forEach((h, i) => { c.fillStyle = h; c.fillRect(1440 + i * 80, 40, 64, 40); c.strokeStyle = '#d5dedb'; c.strokeRect(1440 + i * 80, 40, 64, 40); });
+};
+await document.fonts.ready; window.DUR = 2; render(0); window.READY = true;
+</script></body></html>

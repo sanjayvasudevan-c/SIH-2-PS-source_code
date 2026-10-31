@@ -49,6 +49,26 @@ CURSOR_JS = r"""
 """
 
 
+SNAP_JS = r"""
+(() => {
+  const root = document.body.cloneNode(true);
+  const src = document.body.querySelectorAll('input, textarea, select, canvas');
+  const dst = root.querySelectorAll('input, textarea, select, canvas');
+  src.forEach((e, i) => {
+    const d = dst[i];
+    if (e.tagName === 'CANVAS') { const img = document.createElement('img'); try { img.src = e.toDataURL(); } catch (_) {}
+      img.width = e.clientWidth; img.height = e.clientHeight; img.className = e.className; d.replaceWith(img); return; }
+    if (e.type === 'checkbox' || e.type === 'radio') { if (e.checked) d.setAttribute('checked', ''); else d.removeAttribute('checked'); return; }
+    if (e.tagName === 'TEXTAREA') { d.textContent = e.value; return; }
+    if (e.tagName === 'SELECT') { [...d.options].forEach((o, j) => { if (j === e.selectedIndex) o.setAttribute('selected', ''); else o.removeAttribute('selected'); }); return; }
+    d.setAttribute('value', e.value);
+  });
+  root.querySelectorAll('script, #__demo_cursor').forEach(e => e.remove());
+  return `<!-- ${location.hash} scrollY=${scrollY} -->\n` + root.innerHTML;
+})()
+"""
+
+
 class Clip:
     """One recorded browser clip (one page) with its event timeline."""
 
@@ -80,6 +100,7 @@ class Clip:
 
     def start(self):
         self.t0 = time.time()
+        self.snap("start")
         self.cdp.send("Page.startScreencast", {"format": "jpeg", "quality": 92, "maxWidth": 2560, "maxHeight": 1440,
                                                "everyNthFrame": 1})
         self.page.wait_for_timeout(400)
@@ -94,12 +115,21 @@ class Clip:
     def box(self, label: str, locator):
         """Record an element's box (video pixels) for zooms/callouts."""
         b = locator.bounding_box()
+        self.snap(label)
         if b:
             self.log("box", label=label, x=round(b["x"] * SCALE), y=round(b["y"] * SCALE),
                      w=round(b["width"] * SCALE), h=round(b["height"] * SCALE))
 
     def beat(self, label: str):
         self.log("beat", label=label)
+        self.snap(label)
+
+    def snap(self, label: str):
+        """Save the live DOM (with form values and canvases inlined) so the film can redraw the real UI in HTML."""
+        html = self.page.evaluate(SNAP_JS)
+        d = self.dir.parent / "dom"
+        d.mkdir(exist_ok=True)
+        (d / f"{self.name}__{label}.html").write_text(html)
 
     # ------------------------------------------------------------- human-like interaction
 
@@ -163,6 +193,7 @@ class Clip:
 
     def stop(self) -> dict:
         self.page.wait_for_timeout(500)
+        self.snap("end")
         end_wall = time.time()
         self.cdp.send("Page.stopScreencast")
         self.page.wait_for_timeout(200)

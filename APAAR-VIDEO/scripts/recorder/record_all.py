@@ -446,28 +446,7 @@ def s13_verify(b, st, R):
     c.hold(2500)
     finish(c, R)
 
-    k = st["kadmin"]
-    ck = Clip(k, "s13_revoke", OUT).start()
-    ck.click(k.get_by_role("button", name="Revoke record").first, "Revoke record")
-    dlg = k.locator(".dialog")
-    dlg.wait_for()
-    ck.type(dlg.locator("input"), "Issued in error during the demo", label="reason", delay=35)
-    ck.click(dlg.get_by_role("button", name="Revoke record"), "confirm revoke")
-    k.wait_for_selector("text=Record revoked")
-    ck.hold(900)
-    finish(ck, R)
-
-    c2 = Clip(v, "s13_revoked", OUT).start()
-    ta = v.locator("textarea")
-    c2.click(ta, "paste token")
-    ta.fill(st["token"])
-    c2.click(v.get_by_role("button", name="Verify record"), "Verify record")
-    v.wait_for_selector("text=Revoked on")
-    c2.box("revoked", v.locator(".check", has_text="Revocation status"))
-    c2.move_to(v.locator(".check", has_text="Revocation status"), 0.3)
-    c2.beat("revoked")
-    c2.hold(2600)
-    finish(c2, R)
+    # revocation is shown as the sixth check in the verify panel; no separate revoke clip
 
 
 def s14_consent(b, st, R):
