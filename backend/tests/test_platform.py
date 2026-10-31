@@ -175,3 +175,17 @@ def test_api_key_lifecycle(client, as_):
 def test_notifications_listed(client, as_):
     items = client.get("/api/v1/notifications", headers=as_("narmada.admin@demo.local")).json()
     assert items and all({"message", "link", "created_at"} <= set(i) for i in items)
+
+
+def test_config_exposes_row_cap(client, as_, monkeypatch):
+    from app.modules.normalize import TEMPLATE_COLUMNS
+
+    from .conftest import upload
+
+    assert client.get("/api/v1/config").json()["max_upload_rows"] == settings.max_upload_rows
+    monkeypatch.setattr(settings, "max_upload_rows", 3)
+    assert client.get("/api/v1/config").json()["max_upload_rows"] == 3
+    row = "911100000001,KIT26RC{n},Test Person,2008-05-12,F,INDIAN,India,BTECH-CSE,2026-27,REGULAR,2026-08-03,,,,Y"
+    body = "\n".join([",".join(TEMPLATE_COLUMNS)] + [row.format(n=i) for i in range(4)]) + "\n"
+    r = upload(client, as_("kaveri.staff@demo.local"), None, name="four.csv", content=body.encode())
+    assert r.status_code == 413 and "3" in r.json()["error"]["message"]

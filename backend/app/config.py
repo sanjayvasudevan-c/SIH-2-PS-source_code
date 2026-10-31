@@ -63,7 +63,8 @@ class Settings:
         self.lockout_threshold = 5
         self.lockout_minutes = int(os.environ.get("LOCKOUT_MINUTES", "15"))
         self.max_upload_bytes = 2 * 1024 * 1024
-        self.max_upload_rows = 5000
+        # serverless functions stop at 60 s; a 5,000-row commit takes ~49 s on PostgreSQL, so Vercel defaults to 1,000
+        self.max_upload_rows = int(os.environ.get("MAX_UPLOAD_ROWS", "1000" if ON_VERCEL else "5000"))
         self.current_year = os.environ.get("CURRENT_ACADEMIC_YEAR", "2026-27")
         self.submission_deadline = os.environ.get("SUBMISSION_DEADLINE", "2026-11-30")
         self.adapter_mode = os.environ.get("APAAR_ADAPTER_MODE", "simulated")  # simulated | unavailable

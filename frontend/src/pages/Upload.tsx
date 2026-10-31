@@ -10,6 +10,8 @@ export default function Upload() {
   const [err, setErr] = useState<ApiError | Error | null>(null);
   const [busy, setBusy] = useState(false);
   const jobs = useApi<any[]>("/api/v1/imports");
+  const cfg = useApi<{ max_upload_rows: number }>("/api/v1/config");
+  const maxRows = cfg.data?.max_upload_rows ?? 5000;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -50,7 +52,7 @@ export default function Upload() {
             <Field label="Academic year">
               <select value={year} onChange={(e) => setYear(e.target.value)}>{YEARS.map((y) => <option key={y}>{y}</option>)}</select>
             </Field>
-            <Field label="File (.xlsx or .csv, up to 2 MB and 5,000 rows)">
+            <Field label={`File (.xlsx or .csv, up to 2 MB and ${maxRows.toLocaleString("en-IN")} rows)`}>
               <input type="file" accept=".csv,.xlsx" onChange={(e) => setFile(e.target.files?.[0] || null)} />
             </Field>
             <ErrorBox error={err} />
