@@ -53,12 +53,23 @@ def sign_in(page, email: str):
     page.wait_for_load_state("networkidle")
 
 
+def settle_rules(page):
+    """Rule titles arrive one request after the page; wait so clicks aim at the final layout."""
+    if page.locator("a .rulename, a code").count() and not page.locator(".rulename").count():
+        try:
+            page.wait_for_selector(".rulename", timeout=5000)
+        except Exception:  # noqa: BLE001  (page has codes but no rule names, e.g. tokens)
+            pass
+        page.wait_for_timeout(250)
+
+
 def go(page, path: str, wait: str | None = None):
     page.goto(f"{BASE}/#{path}")
     page.wait_for_load_state("networkidle")
     if wait:
         page.wait_for_selector(wait)
     page.wait_for_timeout(300)
+    settle_rules(page)
 
 
 def finish(clip: Clip, results: dict):
@@ -280,6 +291,7 @@ def s09_privacy(b, st, R):
     go(a, f"/issues/{d003['id']}", "text=Evidence")
     cg = Clip(g, "s09_privacy_inst", OUT).start()
     ca = Clip(a, "s09_privacy_aicte", OUT).start()
+    settle_rules(g)
     cg.click(g.locator("tr", has_text="D003_XINST_ACTIVE").locator("a"), "open D003")
     g.wait_for_selector("text=identity withheld")
     ev_g = g.locator("section.card", has_text="Evidence")

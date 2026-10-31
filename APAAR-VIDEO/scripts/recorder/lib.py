@@ -137,6 +137,7 @@ class Clip:
 
     def type(self, locator, text: str, label: str = "", delay: int = 55, clear: bool = True):
         self.click(locator, label=label or "field", hold=150)
+        locator.focus()  # the visible click can land a frame early during a reflow; typing must go to the field
         if clear:
             self.page.keyboard.press("Control+A")
             self.page.keyboard.press("Backspace")
