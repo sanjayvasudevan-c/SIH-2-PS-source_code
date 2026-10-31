@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import zipfile
 from collections import Counter
 from datetime import timedelta
 
@@ -44,24 +45,45 @@ STALE_LOCK = timedelta(minutes=10)
 # ---------------------------------------------------------------- parsing
 
 
+MAX_XLSX_UNCOMPRESSED = 50 * 1024 * 1024
+MAX_XLSX_RATIO = 100
+
+
+def _check_xlsx_container(content: bytes) -> None:
+    """Reject zip bombs and XML with DOCTYPE/entity declarations before openpyxl unpacks anything."""
+    try:
+        zf = zipfile.ZipFile(io.BytesIO(content))
+        members = zf.infolist()
+    except zipfile.BadZipFile as exc:
+        raise ApiError(415, "This file is not a real Excel (.xlsx) workbook.") from exc
+    too_big = sum(m.file_size for m in members) > MAX_XLSX_UNCOMPRESSED or any(
+        m.file_size / max(m.compress_size, 1) > MAX_XLSX_RATIO for m in members)
+    if too_big:
+        raise ApiError(413, "This workbook is too large when unpacked. Save it again from Excel, or use the CSV template.")
+    with zf:
+        for m in members:
+            if m.filename.startswith("xl/") and m.filename.endswith(".xml"):
+                with zf.open(m) as f:
+                    if b"<!DOCTYPE" in f.read(2048):
+                        raise ApiError(422, "This workbook cannot be read safely. Save it again from Excel and retry.")
+
+
 def parse_upload(filename: str, content: bytes) -> list[dict]:
     name = (filename or "").lower()
     if not (name.endswith(".csv") or name.endswith(".xlsx")):
         raise ApiError(415, "Upload a .csv or .xlsx file (use the template).")
     if len(content) > settings.max_upload_bytes:
         raise ApiError(413, "The file is larger than 2 MB. Split it into smaller files.")
+    wb = None
     if name.endswith(".xlsx"):
         if not content.startswith(b"PK"):
             raise ApiError(415, "This file is not a real Excel (.xlsx) workbook.")
+        _check_xlsx_container(content)
         try:
             wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
         except Exception as exc:  # noqa: BLE001
             raise ApiError(422, "The Excel file could not be read. Save it again from Excel and retry.") from exc
-        ws = wb.worksheets[0]
-        it = ws.iter_rows(values_only=True)
-        header = next(it, None) or ()
-        raw_rows = [list(r) for r in it]
-        wb.close()
+        it = wb.worksheets[0].iter_rows(values_only=True)
     else:
         if b"\x00" in content:
             raise ApiError(415, "The CSV file contains binary data. Save it as plain CSV (UTF-8).")
@@ -69,21 +91,25 @@ def parse_upload(filename: str, content: bytes) -> list[dict]:
             text = content.decode("utf-8-sig")
         except UnicodeDecodeError as exc:
             raise ApiError(422, "The CSV is not UTF-8 encoded. In Excel use 'CSV UTF-8' when saving.") from exc
-        reader = csv.reader(io.StringIO(text))
-        header = next(reader, None) or []
-        raw_rows = list(reader)
-    cols = [canonical_header(h) for h in header]
-    missing = [c for c in REQUIRED_COLUMNS if c not in cols]
-    if missing:
-        raise ApiError(422, "The header row is missing required columns: " + ", ".join(missing)
-                       + ". Download the template to see the expected columns.", missing_columns=missing)
-    rows = []
-    for r in raw_rows:
-        if all(clean_cell(v) == "" for v in r):
-            continue
-        rows.append({cols[i]: clean_cell(r[i]) if i < len(r) else "" for i in range(len(cols)) if cols[i]})
-    if len(rows) > settings.max_upload_rows:
-        raise ApiError(413, f"The file has {len(rows)} rows; the limit is {settings.max_upload_rows} per upload.")
+        it = csv.reader(io.StringIO(text))
+    try:
+        header = next(it, None) or ()
+        cols = [canonical_header(h) for h in header]
+        missing = [c for c in REQUIRED_COLUMNS if c not in cols]
+        if missing:
+            raise ApiError(422, "The header row is missing required columns: " + ", ".join(missing)
+                           + ". Download the template to see the expected columns.", missing_columns=missing)
+        rows = []
+        for r in it:  # streamed: stop as soon as the row cap is passed
+            if all(clean_cell(v) == "" for v in r):
+                continue
+            if len(rows) >= settings.max_upload_rows:
+                raise ApiError(413, f"The file has more than {settings.max_upload_rows} rows; "
+                               f"the limit is {settings.max_upload_rows} per upload. Split it into smaller files.")
+            rows.append({cols[i]: clean_cell(r[i]) if i < len(r) else "" for i in range(len(cols)) if cols[i]})
+    finally:
+        if wb is not None:
+            wb.close()
     if not rows:
         raise ApiError(422, "The file has a header but no data rows.")
     return rows

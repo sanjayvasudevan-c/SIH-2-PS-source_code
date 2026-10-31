@@ -168,3 +168,98 @@ def test_template_downloads(client, as_):
     codes = [c.value for c in wb["lists"]["F"][1:] if c.value]
     assert "BTECH-CSE" in codes and "MCA" not in codes  # own programme codes only
     _ = Workbook
+
+
+# ---------------------------------------------------------------- upload hardening (parse_upload)
+
+import time  # noqa: E402
+import zipfile  # noqa: E402
+
+import pytest  # noqa: E402
+from openpyxl.styles import PatternFill  # noqa: E402
+from openpyxl.worksheet._read_only import ReadOnlyWorksheet  # noqa: E402
+
+from app.config import settings  # noqa: E402
+from app.modules import intake  # noqa: E402
+from app.modules.normalize import TEMPLATE_COLUMNS  # noqa: E402
+from app.security import ApiError  # noqa: E402
+
+ROW = ["911100000001", "KIT26X", "Test Person", "2008-05-12", "F", "INDIAN", "", "BTECH-CSE", "2026-27",
+       "REGULAR", "2026-08-03", "", "", ""]
+
+
+def _xlsx(n_rows: int, blank_styled_to: int = 0) -> bytes:
+    wb = Workbook()
+    ws = wb.active
+    ws.append(TEMPLATE_COLUMNS)
+    for i in range(n_rows):
+        ws.append([*ROW[:1], f"R{i}", *ROW[2:]])
+    fill = PatternFill("solid", fgColor="FFFF00")
+    for r in range(n_rows + 2, blank_styled_to + 1):
+        ws.cell(row=r, column=1).fill = fill
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _csv(n_rows: int) -> bytes:
+    lines = [",".join(TEMPLATE_COLUMNS)] + [",".join([ROW[0], f"R{i}", *ROW[2:]]) for i in range(n_rows)]
+    return ("\n".join(lines) + "\n").encode()
+
+
+def test_xlsx_zip_bomb_rejected():
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", "<Types/>")
+        z.writestr("xl/worksheets/sheet1.xml", b" " * (60 * 1024 * 1024))
+    data = buf.getvalue()
+    assert len(data) < settings.max_upload_bytes
+    t = time.monotonic()
+    with pytest.raises(ApiError) as e:
+        intake.parse_upload("b.xlsx", data)
+    assert e.value.status == 413 and "too large when unpacked" in e.value.message
+    assert time.monotonic() - t < 2
+
+
+def test_xlsx_doctype_rejected():
+    src = zipfile.ZipFile(io.BytesIO(_xlsx(1)))
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for item in src.infolist():
+            body = src.read(item.filename)
+            if item.filename == "xl/worksheets/sheet1.xml":
+                body = b'<!DOCTYPE x [<!ENTITY a "aaaa">]>' + body
+            z.writestr(item, body)
+    with pytest.raises(ApiError) as e:
+        intake.parse_upload("d.xlsx", buf.getvalue())
+    assert e.value.status == 422 and "cannot be read safely" in e.value.message
+
+
+def test_row_cap_boundary():
+    assert len(intake.parse_upload("ok.csv", _csv(5000))) == 5000
+    with pytest.raises(ApiError) as e:
+        intake.parse_upload("over.csv", _csv(5001))
+    assert e.value.status == 413 and "5000" in e.value.message
+
+
+def test_xlsx_blank_trailing_rows_accepted():
+    assert len(intake.parse_upload("blank.xlsx", _xlsx(3, blank_styled_to=3000))) == 3
+
+
+def test_xlsx_rows_streamed_not_materialised(monkeypatch):
+    data = _xlsx(50)
+    yielded = 0
+    original = ReadOnlyWorksheet.iter_rows
+
+    def counting(self, *a, **kw):
+        nonlocal yielded
+        for row in original(self, *a, **kw):
+            yielded += 1
+            yield row
+
+    monkeypatch.setattr(ReadOnlyWorksheet, "iter_rows", counting)
+    monkeypatch.setattr(settings, "max_upload_rows", 10)
+    with pytest.raises(ApiError) as e:
+        intake.parse_upload("s.xlsx", data)
+    assert e.value.status == 413
+    assert yielded < 15
