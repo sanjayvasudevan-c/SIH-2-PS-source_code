@@ -292,7 +292,7 @@ def s09_privacy(b, st, R):
     cg = Clip(g, "s09_privacy_inst", OUT).start()
     ca = Clip(a, "s09_privacy_aicte", OUT).start()
     settle_rules(g)
-    cg.click(g.locator("tr", has_text="D003_XINST_ACTIVE").locator("a"), "open D003")
+    cg.click(g.locator("tr", has_text="D003_XINST_ACTIVE").locator("a"), "open D003", dy=0.22)
     g.wait_for_selector("text=identity withheld")
     ev_g = g.locator("section.card", has_text="Evidence")
     cg.box("evidence", ev_g)

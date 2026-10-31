@@ -127,8 +127,8 @@ class Clip:
         self.page.wait_for_timeout(180)
         return x, y
 
-    def click(self, locator, label: str = "", hold: int = 450, sound: str = "click"):
-        x, y = self.move_to(locator)
+    def click(self, locator, label: str = "", hold: int = 450, sound: str = "click", dx: float = 0.5, dy: float = 0.5):
+        x, y = self.move_to(locator, dx, dy)
         self.log("click", label=label, x=round(x * SCALE), y=round(y * SCALE), sound=sound)
         self.page.mouse.down()
         self.page.wait_for_timeout(70)
