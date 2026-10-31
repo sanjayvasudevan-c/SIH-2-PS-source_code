@@ -59,6 +59,13 @@ After the architecture audit (`docs/architecture-audit/`), the plan `docs/superp
 - **CI:** `.github/workflows/ci.yml`.
 - Schema changed (`students.guardian_consent_recorded`); there are no migrations, so reseed (`python -m app.seed --reset`) and deploy only to a fresh database.
 
+## Live deployment (31 Oct 2026)
+
+- **URL:** https://apaar-student-register.vercel.app (Vercel project `apaar-student-register`, team GEOLogics). Production builds automatically from branch `claude/busy-newton-qnsfmy` on every push.
+- **Database:** the Neon store attached to the project (`store_32K6wolS6CroNAy4`). Its variables have the prefix `aicte_students_register_` (e.g. `aicte_students_register_DATABASE_URL`); `config._database_url` accepts any `*_DATABASE_URL`.
+- **Project env vars set by us:** `DEMO_MODE=1` (production, preview) and `SEED_RESET=0` (production). `MAX_UPLOAD_ROWS` defaults to 1000 on Vercel.
+- **Reseeding:** the build seeds only an empty database. After a schema change, set `SEED_RESET=1`, push or redeploy once, then set it back to `0`. It wipes and rebuilds the synthetic data. It was used once, on 31 Oct 2026, because the database predated `students.guardian_consent_recorded`.
+
 ## Code map (backend/app)
 - `config.py`: settings; secrets are generated into `var/`; `APAAR_TODAY` overrides today's date for tests.
 - `db.py`: engine and session. `after_commit()` hooks run only after the outermost commit; savepoint commits are skipped. That guard fixed a SQLite "database is locked" deadlock.
