@@ -89,7 +89,17 @@ The remaining warnings, with reasons:
 - **Shadows:** remain only on what floats or overlaps: the sticky menu, dialogs, the updates panel, toasts and the focus halo.
 - **Em dashes:** mostly the "—" placeholder for missing values in tables, which app rules ask for.
 
-**Build and tests:** see the final section of this report.
+**Build and tests (final code):**
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | no errors |
+| `npm run build` (production) | built; CSS about 23 kB (6 kB gzip) |
+| UI tour, 66 page views at 1360 px and 390 px, all roles | passed: 0 console errors, 0 error banners, 0 horizontal scroll |
+| Accessibility script, 17 pages | no problems found |
+| Motion and scroll script | 13/13 pass |
+| Backend tests | 131 passed, 1 skipped (PostgreSQL-only). Last run after the token and label commits; later commits changed only frontend files and docs |
+| `ruff`, `scripts/check_claims.py` | clean; claims OK (36 entries) |
 
 ## Remaining known issues
 
@@ -99,3 +109,4 @@ The remaining warnings, with reasons:
 - **The What's-new strip** truncates on phones; the full text is in "All updates".
 - **Signed-in screens** were checked by the tour, the accessibility script and screenshots, but not by `inspect.mjs`, which can't sign in.
 - **No axe-core scan and no screen-reader pass** (see above).
+- **Stretched cards:** in a two-column row, a card with fewer rows (APAAR coverage on the national register) stretches to its neighbour's height and leaves a blank band at its foot.
