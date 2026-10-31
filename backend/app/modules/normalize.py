@@ -260,6 +260,10 @@ def normalise_row(raw: dict) -> tuple[dict, dict, list[dict]]:
         else:
             parsed["apaar_pending_reason"] = data["apaar_pending_reason"] = r
 
+    if not any(canonical_header(k) == "guardian_consent_recorded" for k in raw):
+        parsed["guardian_consent_recorded"] = None  # column absent (older template, ERP record): keep stored value
+        del data["guardian_consent_recorded"]  # stays absent when the stored row is re-validated at commit
+        return data, parsed, findings
     consent = parse_consent_flag(data["guardian_consent_recorded"])
     parsed["guardian_consent_recorded"] = bool(consent)
     if consent is None:

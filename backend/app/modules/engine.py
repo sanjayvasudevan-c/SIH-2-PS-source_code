@@ -72,6 +72,29 @@ def is_minor(dob: date, on: date) -> bool:
     return _age(dob, on) < 18
 
 
+def _fill_stored_consent(db: Session, institution, self_enrol, parsed_rows: list[dict]) -> None:
+    """Rows without a guardian-consent column take the student's stored value (False for new students)."""
+    missing = [q for q in parsed_rows if q["guardian_consent_recorded"] is None]
+    if not missing:
+        return
+    if self_enrol is not None:
+        for q in missing:
+            q["guardian_consent_recorded"] = self_enrol.student.guardian_consent_recorded
+        return
+    by_apaar, by_roll = {}, {}
+    apaars = sorted({q["apaar_id"] for q in missing if q["apaar_id"]})
+    rolls = sorted({q["institution_student_id"] for q in missing if q["institution_student_id"]})
+    for i in range(0, len(apaars), 500):
+        for st in db.execute(select(Student).where(Student.apaar_id.in_(apaars[i : i + 500]))).scalars():
+            by_apaar[st.apaar_id] = st.guardian_consent_recorded
+    for i in range(0, len(rolls), 500):
+        for en in db.execute(select(Enrolment).where(Enrolment.institution_id == institution.id,
+                                                     Enrolment.institution_student_id.in_(rolls[i : i + 500]))).scalars():
+            by_roll[en.institution_student_id] = en.student.guardian_consent_recorded
+    for q in missing:
+        q["guardian_consent_recorded"] = by_apaar.get(q["apaar_id"], by_roll.get(q["institution_student_id"], False))
+
+
 MINOR_HOLD = ("This student is under 18 and the institution has not recorded guardian consent. "
               "The institution must record it before the record can be shared or verified.")
 
@@ -197,9 +220,10 @@ def validate_rows(
     }
     self_enrol = db.get(Enrolment, self_enrolment_id) if self_enrolment_id else None
 
+    normalised = [(row_no, *normalise_row(raw)) for row_no, raw in rows]
+    _fill_stored_consent(db, institution, self_enrol, [parsed for _n, _d, parsed, _f in normalised])
     plans: list[RowPlan] = []
-    for row_no, raw in rows:
-        data, parsed, fnd = normalise_row(raw)
+    for row_no, data, parsed, fnd in normalised:
         plan = RowPlan(row_no=row_no, data=data, parsed=parsed, findings=fnd)
         plan.programme_id = _row_rules(parsed, fnd, programmes, intake_keys, academic_year)
         plans.append(plan)
@@ -486,6 +510,9 @@ def commit_values(
         if allow_master_update or (elsewhere is None and not plan.has("D004_ATTR_CONFLICT")):
             changes.update(_set_fields(st, attrs))
             changes.pop("name_key", None)
+        elif attrs["guardian_consent_recorded"] and not st.guardian_consent_recorded:
+            # consent is not shared identity data: any enrolling institution may record it, none may withdraw it here
+            changes.update(_set_fields(st, {"guardian_consent_recorded": True}))
         if changes:
             st.version += 1
             add_revision(db, "student", st.id, st.version, changes, reason, actor_id)
@@ -527,6 +554,8 @@ def commit_values(
                  institution_id=institution.id)
 
     _open_review_issues(db, plan, st, en, institution, year, actor)
+    issues.sync_condition_flag(db, "R015_MINOR_GUARDIAN_CONSENT", en.id, plan.has("R015_MINOR_GUARDIAN_CONSENT"),
+                               "Guardian consent recorded, or the student is now 18.", institution.id)
     if new_student and plan.candidates:
         identity.record_candidates(db, st, plan.candidates)
     return en

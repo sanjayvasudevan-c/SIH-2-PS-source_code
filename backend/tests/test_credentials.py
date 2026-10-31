@@ -215,3 +215,100 @@ def test_minor_held_from_share_and_consent(client, as_):
                              "version": detail["enrolment"]["version"]})
     assert fix.status_code == 200, fix.text
     assert client.post(f"/api/v1/me/credentials/{cid}/present", headers=m, json={"claims": ["name"]}).status_code == 200
+
+
+# ---------------------------------------------------------------- R015 lifecycle (final-review fixes)
+
+BPE_ADMIN = "brahmaputra.admin@demo.local"
+
+
+def _sneha():
+    with SessionLocal() as s:
+        st = s.execute(select(Student).where(Student.full_name == "Sneha Patil")).scalar_one()
+        en = s.execute(select(Enrolment).where(Enrolment.student_id == st.id)).scalars().first()
+        return st.id, en.id, st.apaar_id, st.date_of_birth.isoformat()
+
+
+def _set_consent(client, as_, eid, value):
+    h = as_(BPE_ADMIN)
+    current = client.get(f"/api/v1/enrolments/{eid}", headers=h).json()["enrolment"]
+    if ("Y" if current["student"]["guardian_consent_recorded"] else "") == value:
+        return type("Same", (), {"status_code": 200})()  # already in the wanted state
+    v = current["version"]
+    return client.patch(f"/api/v1/enrolments/{eid}", headers=h, json={
+        "changes": {"guardian_consent_recorded": value}, "reason": "Guardian consent register updated",
+        "version": v, "acknowledge_review": True})
+
+
+def _consent(sid):
+    with SessionLocal() as s:
+        return s.get(Student, sid).guardian_consent_recorded
+
+
+def _r015_status(eid):
+    from app.models import ValidationIssue
+
+    with SessionLocal() as s:
+        i = s.execute(select(ValidationIssue).where(ValidationIssue.rule_id == "R015_MINOR_GUARDIAN_CONSENT",
+                                                    ValidationIssue.dedupe_key == eid)).scalars().first()
+        return i.status if i else None
+
+
+def test_upload_without_consent_column_keeps_recorded_consent(client, as_):
+    from app.modules.normalize import TEMPLATE_COLUMNS
+    from app.modules.views import row_from_enrolment
+
+    from .conftest import upload
+
+    sid, eid, *_ = _sneha()
+    assert _set_consent(client, as_, eid, "Y").status_code == 200 and _consent(sid) is True
+    with SessionLocal() as s:
+        row = row_from_enrolment(s, s.get(Enrolment, eid))
+    cols = [c for c in TEMPLATE_COLUMNS if c != "guardian_consent_recorded"]  # pre-R015 template / ERP record
+    body = ",".join(cols) + "\n" + ",".join(str(row[c]) for c in cols) + "\n"
+    h = as_("brahmaputra.staff@demo.local")
+    job = upload(client, h, None, name="old_template.csv", content=body.encode()).json()
+    assert client.post(f"/api/v1/imports/{job['id']}/commit", headers=h).status_code == 200
+    assert _consent(sid) is True
+
+
+def test_r015_flag_closes_when_consent_recorded_and_reopens_when_withdrawn(client, as_):
+    sid, eid, *_ = _sneha()
+    assert _set_consent(client, as_, eid, "Y").status_code == 200
+    assert _r015_status(eid) == "RESOLVED"
+    assert _set_consent(client, as_, eid, "").status_code == 200
+    assert _consent(sid) is False and _r015_status(eid) == "OPEN"
+
+
+def test_verifier_result_held_when_consent_withdrawn(client, as_):
+    sid, eid, apaar, dob = _sneha()
+    assert _set_consent(client, as_, eid, "Y").status_code == 200
+    v = as_("verifier@demo.local")
+    req = client.post("/api/v1/verification/requests", headers=v,
+                      json={"apaar_id": apaar, "date_of_birth": dob, "purpose": "Internship eligibility check"}).json()
+    assert client.post(f"/api/v1/verification/requests/{req['id']}/consent", headers=as_(MINOR),
+                       json={"decision": "APPROVE"}).status_code == 200
+    assert client.get(f"/api/v1/verification/requests/{req['id']}/result", headers=v).status_code == 200
+    assert _set_consent(client, as_, eid, "").status_code == 200
+    r = client.get(f"/api/v1/verification/requests/{req['id']}/result", headers=v)
+    assert r.status_code == 409 and r.json()["error"]["held"] == "R015"
+
+
+def test_consent_recordable_for_minor_enrolled_at_two_institutions(client, as_):
+    from datetime import date
+
+    from app.models import Institution, Programme
+
+    sid, eid, *_ = _sneha()
+    assert _set_consent(client, as_, eid, "").status_code == 200
+    with SessionLocal() as s:
+        inst = s.execute(select(Institution).where(Institution.short_name == "kaveri")).scalar_one()
+        prog = s.execute(select(Programme).where(Programme.institution_id == inst.id,
+                                                 Programme.code == "BTECH-CSE")).scalar_one()
+        s.add(Enrolment(student_id=sid, institution_id=inst.id, programme_id=prog.id, academic_year="2026-27",
+                        institution_student_id="KIT26TWO1", seat_category="REGULAR", admission_date=date(2026, 8, 3),
+                        status="PROVISIONAL", source="MANUAL"))
+        s.commit()
+    r = _set_consent(client, as_, eid, "Y")
+    assert r.status_code == 200, r.text
+    assert _consent(sid) is True

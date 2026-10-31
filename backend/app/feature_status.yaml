@@ -180,12 +180,18 @@
 - id: minor-guardian-consent
   title: R015 hold for students under 18 until the institution records guardian consent
   status: PROTOTYPE
-  routes: ["POST /api/v1/me/credentials/{cred_id}/present", "POST /api/v1/verification/requests/{req_id}/consent"]
+  routes: ["POST /api/v1/me/credentials/{cred_id}/present", "POST /api/v1/verification/requests/{req_id}/consent",
+           "GET /api/v1/verification/requests/{req_id}/result"]
+  note: A token presented before the hold applied still verifies on the public verify-token endpoint until it expires.
   tests:
     - backend/tests/test_rules.py::test_guardian_consent_parsing
     - backend/tests/test_rules.py::test_minor_boundary_dates
     - backend/tests/test_rules.py::test_r015_review_for_minor_without_consent
     - backend/tests/test_credentials.py::test_minor_held_from_share_and_consent
+    - backend/tests/test_credentials.py::test_upload_without_consent_column_keeps_recorded_consent
+    - backend/tests/test_credentials.py::test_r015_flag_closes_when_consent_recorded_and_reopens_when_withdrawn
+    - backend/tests/test_credentials.py::test_verifier_result_held_when_consent_withdrawn
+    - backend/tests/test_credentials.py::test_consent_recordable_for_minor_enrolled_at_two_institutions
 
 - id: claims-register
   title: This feature-status register, checked against routes and tests

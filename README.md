@@ -322,7 +322,7 @@ curl -s localhost:8000/.well-known/issuer-keys
 ## Testing
 
 ```bash
-make test        # 128 backend tests against an isolated temporary database
+make test        # 132 backend tests against an isolated temporary database
 make lint        # ruff
 make typecheck   # tsc --noEmit
 make seed && make run     # terminal 1
@@ -330,7 +330,7 @@ make demos                # terminal 2: Demos A, B, C via the API, PASS/FAIL per
 make tour                 # Playwright: every page at 1360 px and 390 px; fails on console errors
 ```
 
-Latest results (31 Oct 2026): **128 passed on PostgreSQL 16**; on SQLite 127 passed and 1 skipped (a PostgreSQL-only concurrency test). Lint, typecheck and the claims check are clean, **all 29 demo checks passed**, and the UI tour passed with 66 page views and 0 errors with `DEMO_MODE` on and off. GitHub Actions runs the same checks on every push. Details are in [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
+Latest results (31 Oct 2026): **132 passed on PostgreSQL 16**; on SQLite 131 passed and 1 skipped (a PostgreSQL-only concurrency test). Lint, typecheck and the claims check are clean, **all 29 demo checks passed**, and the UI tour passed with 66 page views and 0 errors with `DEMO_MODE` on and off. GitHub Actions runs the same checks on every push. Details are in [`docs/TEST_REPORT.md`](docs/TEST_REPORT.md).
 
 ## Configuration
 
@@ -358,7 +358,7 @@ backend/app/
     ledger.py identity.py apaar_adapter.py   seat counting, name matching, SIMULATED registry
     intake.py issues.py credentials.py analytics.py events.py views.py
     api_*.py                             one router per area (auth, registry, imports, records, issues, ...)
-backend/tests/          pytest suite (128 tests)
+backend/tests/          pytest suite (132 tests)
 frontend/src/           React app: App.tsx (routes, role menus), api.ts, components/SeatStrip.tsx, pages/
 scripts/                run_demos.py (Demos A/B/C), ui_tour.py (Playwright), check_claims.py (status register)
 sample_data/            Demo A (CSV + XLSX) and Demo B files, written by the seed

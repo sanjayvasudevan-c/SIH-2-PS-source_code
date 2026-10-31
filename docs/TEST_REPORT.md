@@ -8,15 +8,15 @@ Run on branch `claude/busy-newton-qnsfmy` after Tasks 1–7 of `docs/superpowers
 |---|---|---|
 | Lint | `ruff check backend scripts api` | All checks passed |
 | Typecheck | `npx tsc --noEmit` | No errors |
-| Backend tests, SQLite | `cd backend && pytest -q` | **127 passed, 1 skipped** (the PostgreSQL-only lock test), 80 s |
-| Backend tests, PostgreSQL 16 | `TEST_DATABASE_URL=postgresql+psycopg://… pytest -q` | **128 passed**, 152 s |
+| Backend tests, SQLite | `cd backend && pytest -q` | **131 passed, 1 skipped** (the PostgreSQL-only lock test), 92 s (after the final-review fixes) |
+| Backend tests, PostgreSQL 16 | `TEST_DATABASE_URL=postgresql+psycopg://… pytest -q` | **132 passed**, 178 s (after the final-review fixes) |
 | Claims register | `python scripts/check_claims.py` | `claims OK (36 entries)` |
 | Demos | `scripts/run_demos.py` on a fresh seed | **ALL DEMOS PASSED**: 29 passed, 0 failed; audit chain valid over 1,451 events |
 | UI tour, `DEMO_MODE=0` | `scripts/ui_tour.py` (typed sign-in) | **UI TOUR PASSED**: 0 console errors, 0 error banners, 0 horizontal scroll |
 | UI tour, `DEMO_MODE=1` | `scripts/ui_tour.py` | **UI TOUR PASSED**: 66 page views (3 public pages incl. `/status` + role pages, at 1360 px and 390 px) |
 | CI | GitHub Actions run 41181898667 | backend (lint, SQLite, PostgreSQL 16, claims) and frontend (tsc, build) both **success** |
 
-New tests in this run: `test_claims.py` (5), upload hardening in `test_imports.py` (5), login timing and `DEMO_MODE` in `test_security.py` (3), the concurrent capacity check in `test_ledger.py` (1, PostgreSQL), R015 in `test_rules.py` (3) and `test_credentials.py` (1), and the row-cap config in `test_platform.py` (1).
+New tests in this run: `test_claims.py` (5), upload hardening in `test_imports.py` (5), login timing and `DEMO_MODE` in `test_security.py` (3), the concurrent capacity check in `test_ledger.py` (1, PostgreSQL), R015 in `test_rules.py` (3) and `test_credentials.py` (5, including the final-review fixes), and the row-cap config in `test_platform.py` (1).
 
 ---
 

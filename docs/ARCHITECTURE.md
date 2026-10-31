@@ -140,7 +140,7 @@ backend/app/
     views.py         Role-aware serialisation (APAAR masking)
     events.py        In-process SSE bus
     api_*.py         11 HTTP routers (one per area)
-backend/tests/       pytest suite (110 test functions, 128 cases)
+backend/tests/       pytest suite (114 test functions, 132 cases)
 frontend/src/        React 18 + TypeScript SPA (22 pages)
 api/index.py         Vercel serverless entry
 scripts/             run_demos.py, ui_tour.py, vercel_build.sh
@@ -341,7 +341,7 @@ Every rule has a stable ID, a severity, a stage, a description and **remediation
 | ROW | R012_PROGRAMME | ERROR | Programme not approved for this institution/year |
 | ROW | R013_CATEGORY_CONSISTENCY | ERROR | Seat category conflicts with nationality (e.g. NRI seat for a foreign national) |
 | ROW | R014_YEAR_MISMATCH | ERROR | Row year differs from the upload year |
-| ROW | R015_MINOR_GUARDIAN_CONSENT | REVIEW | Student under 18 today without recorded guardian consent. Sharing and consent-based verification are held (409) until the institution records it |
+| ROW | R015_MINOR_GUARDIAN_CONSENT | REVIEW | Student under 18 today without recorded guardian consent. Sharing, approving and viewing consent-based verification are held (409) until consent is recorded; the flag closes itself when consent is recorded and reopens if it is withdrawn. A file or ERP record without the consent column keeps the stored value. Any enrolling institution may record consent; only a correction may withdraw it |
 | FILE | F001_DUP_APAAR_IN_FILE 🔒 | ERROR | Same APAAR ID twice in one file |
 | FILE | F002_DUP_ROLL_IN_FILE 🔒 | ERROR | Same roll number twice in one file |
 | FILE | F003_POSSIBLE_DUP_IN_FILE | WARNING | Same name + DOB, different APAAR IDs |
@@ -795,7 +795,7 @@ The fix (same-transaction writes plus signed checkpoints) is in audit docs 07 an
 
 | Gate | Command | Result |
 |---|---|---|
-| Backend tests | `make test` (pytest, isolated temp DB) | **128 passed** on PostgreSQL 16; on SQLite 127 passed, 1 skipped (the PostgreSQL-only lock test) |
+| Backend tests | `make test` (pytest, isolated temp DB) | **132 passed** on PostgreSQL 16; on SQLite 131 passed, 1 skipped (the PostgreSQL-only lock test) |
 | Claims register | `python scripts/check_claims.py` | OK (36 entries) |
 | Lint | `make lint` (ruff) | Pass |
 | Types | `make typecheck` (tsc) | Pass |
@@ -811,7 +811,7 @@ The fix (same-transaction writes plus signed checkpoints) is in audit docs 07 an
 | `test_security.py` | 14 | Roles, scoping, masking, lockout, login timing, `DEMO_MODE` |
 | `test_platform.py` | 13 | Audit chain, events, integration, idempotency, row-cap config |
 | `test_imports.py` | 12 | Upload, correct, partial commit, retry, zip/entity bombs, row cap |
-| `test_credentials.py` | 10 | Issue, disclose, tamper, revoke, minor hold |
+| `test_credentials.py` | 14 | Issue, disclose, tamper, revoke, minor hold and its lifecycle |
 | `test_claims.py` | 5 | Claims checker and `/system/status` |
 | `test_identity.py` | 6 | Name matching |
 | `test_corrections.py` | 5 | Student correction flow |

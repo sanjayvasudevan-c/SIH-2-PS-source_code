@@ -92,6 +92,31 @@ def open_or_update(
     return issue
 
 
+def sync_condition_flag(db: Session, rule_id: str, dedupe_key: str, present: bool, resolved_note: str,
+                        institution_id: str | None) -> None:
+    """Keep a row-condition flag in step with the record: close it when the condition is gone, reopen it if it returns."""
+    existing = db.execute(
+        select(ValidationIssue)
+        .where(ValidationIssue.rule_id == rule_id, ValidationIssue.dedupe_key == dedupe_key)
+        .order_by(ValidationIssue.created_at.desc())
+    ).scalars().first()
+    if existing is None:
+        return
+    if present and existing.status in CLOSED_STATES:
+        existing.status = "OPEN"
+        add_event(db, existing, None, "SYSTEM", "SYSTEM_REOPENED", "The condition was measured again.")
+    elif not present and existing.status in OPEN_STATES:
+        existing.status = "RESOLVED"
+        existing.resolved_by = None
+        existing.resolution_note = resolved_note
+        add_event(db, existing, None, "SYSTEM", "SYSTEM_AUTO_RESOLVED", resolved_note)
+    else:
+        return
+    audit.record(db, None, "issue.sync", "issue", existing.id, detail={"rule_id": rule_id, "open": present},
+                 institution_id=institution_id)
+    _publish(db, existing, "issue.updated")
+
+
 # ---------------------------------------------------------------- capacity (C001 / C002)
 
 

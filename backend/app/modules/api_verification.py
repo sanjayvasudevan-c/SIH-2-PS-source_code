@@ -158,6 +158,7 @@ def result(req_id: str, actor: Actor = Depends(require_roles("VERIFIER")), db: S
     if r.status != "APPROVED" or utcnow() > r.expires_at:
         raise ApiError(403, "The student has not given consent for this request.")
     st = db.get(Student, r.student_id)
+    require_guardian_consent(st)
     ens = db.execute(select(Enrolment).where(Enrolment.student_id == st.id).order_by(Enrolment.academic_year)).scalars()
     audit.record(db, actor, "verification.result_view", "verification_request", r.id)
     db.commit()
