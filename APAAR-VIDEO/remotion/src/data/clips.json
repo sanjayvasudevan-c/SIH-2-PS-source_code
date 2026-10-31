@@ -1,0 +1,1006 @@
+{
+ "s02_signin.mp4": {
+  "duration": 9.8,
+  "events": [
+   {
+    "t": 1.114,
+    "type": "box",
+    "label": "accounts",
+    "x": 1293,
+    "y": 628,
+    "w": 845,
+    "h": 836
+   },
+   {
+    "t": 3.672,
+    "type": "click",
+    "label": "text size A+",
+    "x": 2489,
+    "y": 25,
+    "sound": "toggle"
+   },
+   {
+    "t": 5.906,
+    "type": "click",
+    "label": "text size A",
+    "x": 2428,
+    "y": 27,
+    "sound": "toggle"
+   },
+   {
+    "t": 7.405,
+    "type": "click",
+    "label": "Kaveri staff",
+    "x": 1432,
+    "y": 1242,
+    "sound": "click"
+   },
+   {
+    "t": 8.004,
+    "type": "beat",
+    "label": "dashboard"
+   }
+  ]
+ },
+ "s03_dashboard.mp4": {
+  "duration": 9.167,
+  "events": [
+   {
+    "t": 0.407,
+    "type": "box",
+    "label": "cse_strip",
+    "x": 222,
+    "y": 873,
+    "w": 1040,
+    "h": 268
+   },
+   {
+    "t": 3.115,
+    "type": "box",
+    "label": "sn_row",
+    "x": 222,
+    "y": 1006,
+    "w": 1040,
+    "h": 57
+   },
+   {
+    "t": 5.858,
+    "type": "box",
+    "label": "figures",
+    "x": 185,
+    "y": 551,
+    "w": 2190,
+    "h": 174
+   }
+  ]
+ },
+ "s04_upload.mp4": {
+  "duration": 11.167,
+  "events": [
+   {
+    "t": 1.487,
+    "type": "click",
+    "label": "Upload records",
+    "x": 311,
+    "y": 274,
+    "sound": "click"
+   },
+   {
+    "t": 2.596,
+    "type": "box",
+    "label": "template",
+    "x": 185,
+    "y": 551,
+    "w": 1081,
+    "h": 500
+   },
+   {
+    "t": 5.61,
+    "type": "click",
+    "label": "choose file",
+    "x": 0,
+    "y": 0,
+    "sound": "click"
+   },
+   {
+    "t": 7.484,
+    "type": "click",
+    "label": "Upload and check",
+    "x": 1474,
+    "y": 978,
+    "sound": "click"
+   },
+   {
+    "t": 8.126,
+    "type": "beat",
+    "label": "counts"
+   },
+   {
+    "t": 8.145,
+    "type": "box",
+    "label": "counts",
+    "x": 185,
+    "y": 552,
+    "w": 2190,
+    "h": 174
+   }
+  ]
+ },
+ "s05_fix.mp4": {
+  "duration": 61.333,
+  "events": [
+   {
+    "t": 2.393,
+    "type": "click",
+    "label": "Error tab",
+    "x": 440,
+    "y": 720,
+    "sound": "toggle"
+   },
+   {
+    "t": 3.576,
+    "type": "box",
+    "label": "suggestion",
+    "x": 187,
+    "y": 1109,
+    "w": 2187,
+    "h": 189
+   },
+   {
+    "t": 5.005,
+    "type": "beat",
+    "label": "suggestion"
+   },
+   {
+    "t": 7.88,
+    "type": "click",
+    "label": "Use this",
+    "x": 1866,
+    "y": 1244,
+    "sound": "click"
+   },
+   {
+    "t": 8.464,
+    "type": "beat",
+    "label": "accepted"
+   },
+   {
+    "t": 9.666,
+    "type": "beat",
+    "label": "ff_start"
+   },
+   {
+    "t": 10.879,
+    "type": "click",
+    "label": "edit KIT26CSE906",
+    "x": 2136,
+    "y": 905,
+    "sound": "click"
+   },
+   {
+    "t": 13.318,
+    "type": "click",
+    "label": "APAAR ID",
+    "x": 565,
+    "y": 721,
+    "sound": "click"
+   },
+   {
+    "t": 13.596,
+    "type": "type",
+    "label": "APAAR ID",
+    "chars": 12,
+    "duration": 0.54
+   },
+   {
+    "t": 16.145,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 830,
+    "sound": "click"
+   },
+   {
+    "t": 18.905,
+    "type": "click",
+    "label": "edit KIT26ECE907",
+    "x": 2136,
+    "y": 720,
+    "sound": "click"
+   },
+   {
+    "t": 21.49,
+    "type": "click",
+    "label": "APAAR ID",
+    "x": 565,
+    "y": 721,
+    "sound": "click"
+   },
+   {
+    "t": 21.794,
+    "type": "type",
+    "label": "APAAR ID",
+    "chars": 12,
+    "duration": 0.54
+   },
+   {
+    "t": 24.419,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 830,
+    "sound": "click"
+   },
+   {
+    "t": 27.039,
+    "type": "click",
+    "label": "edit KIT26ECE910",
+    "x": 2136,
+    "y": 720,
+    "sound": "click"
+   },
+   {
+    "t": 29.433,
+    "type": "click",
+    "label": "Date of birth (YYYY-MM-DD)",
+    "x": 565,
+    "y": 719,
+    "sound": "click"
+   },
+   {
+    "t": 29.723,
+    "type": "type",
+    "label": "Date of birth (YYYY-MM-DD)",
+    "chars": 10,
+    "duration": 0.45
+   },
+   {
+    "t": 31.854,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 1303,
+    "sound": "click"
+   },
+   {
+    "t": 34.189,
+    "type": "click",
+    "label": "edit KIT26CSE913",
+    "x": 2136,
+    "y": 500,
+    "sound": "click"
+   },
+   {
+    "t": 36.457,
+    "type": "click",
+    "label": "Seat category",
+    "x": 565,
+    "y": 720,
+    "sound": "toggle"
+   },
+   {
+    "t": 38.337,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 977,
+    "sound": "click"
+   },
+   {
+    "t": 40.614,
+    "type": "click",
+    "label": "edit KIT26MTA914",
+    "x": 2136,
+    "y": 624,
+    "sound": "click"
+   },
+   {
+    "t": 42.824,
+    "type": "click",
+    "label": "Programme code",
+    "x": 1280,
+    "y": 719,
+    "sound": "click"
+   },
+   {
+    "t": 43.099,
+    "type": "type",
+    "label": "Programme code",
+    "chars": 9,
+    "duration": 0.41
+   },
+   {
+    "t": 45.268,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 1139,
+    "sound": "click"
+   },
+   {
+    "t": 47.58,
+    "type": "click",
+    "label": "edit KIT26ECE915",
+    "x": 2136,
+    "y": 751,
+    "sound": "click"
+   },
+   {
+    "t": 49.334,
+    "type": "click",
+    "label": "Gender",
+    "x": 1280,
+    "y": 1345,
+    "sound": "toggle"
+   },
+   {
+    "t": 51.744,
+    "type": "click",
+    "label": "save row",
+    "x": 394,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 52.814,
+    "type": "beat",
+    "label": "ff_end"
+   },
+   {
+    "t": 54.073,
+    "type": "click",
+    "label": "All rows",
+    "x": 280,
+    "y": 427,
+    "sound": "toggle"
+   },
+   {
+    "t": 54.627,
+    "type": "box",
+    "label": "duplicate",
+    "x": 187,
+    "y": 1806,
+    "w": 2187,
+    "h": 125
+   },
+   {
+    "t": 56.425,
+    "type": "click",
+    "label": "Leave out",
+    "x": 2279,
+    "y": 720,
+    "sound": "click"
+   },
+   {
+    "t": 58.356,
+    "type": "beat",
+    "label": "ready"
+   },
+   {
+    "t": 58.368,
+    "type": "box",
+    "label": "counts",
+    "x": 185,
+    "y": 552,
+    "w": 2190,
+    "h": 174
+   }
+  ]
+ },
+ "s06_commit_aicte.mp4": {
+  "duration": 11.533,
+  "events": [
+   {
+    "t": 3.238,
+    "type": "box",
+    "label": "figures",
+    "x": 185,
+    "y": 551,
+    "w": 2190,
+    "h": 174
+   },
+   {
+    "t": 8.16,
+    "type": "beat",
+    "label": "live_update"
+   },
+   {
+    "t": 8.224,
+    "type": "box",
+    "label": "updated",
+    "x": 1290,
+    "y": 464,
+    "w": 283,
+    "h": 32
+   }
+  ]
+ },
+ "s06_commit_inst.mp4": {
+  "duration": 27.467,
+  "events": [
+   {
+    "t": 0.828,
+    "type": "box",
+    "label": "projection",
+    "x": 185,
+    "y": 755,
+    "w": 2190,
+    "h": 1257
+   },
+   {
+    "t": 4.777,
+    "type": "click",
+    "label": "Commit 15 rows",
+    "x": 2244,
+    "y": 481,
+    "sound": "click"
+   },
+   {
+    "t": 5.403,
+    "type": "box",
+    "label": "dialog",
+    "x": 818,
+    "y": 568,
+    "w": 924,
+    "h": 333
+   },
+   {
+    "t": 7.96,
+    "type": "click",
+    "label": "confirm commit",
+    "x": 1568,
+    "y": 822,
+    "sound": "click"
+   },
+   {
+    "t": 8.55,
+    "type": "beat",
+    "label": "committed"
+   }
+  ]
+ },
+ "s07_seatcheck.mp4": {
+  "duration": 8.6,
+  "events": [
+   {
+    "t": 1.342,
+    "type": "click",
+    "label": "Seat check",
+    "x": 1346,
+    "y": 274,
+    "sound": "click"
+   },
+   {
+    "t": 3.142,
+    "type": "click",
+    "label": "Seat category",
+    "x": 1094,
+    "y": 605,
+    "sound": "toggle"
+   },
+   {
+    "t": 4.557,
+    "type": "click",
+    "label": "Check seats",
+    "x": 1582,
+    "y": 605,
+    "sound": "click"
+   },
+   {
+    "t": 5.147,
+    "type": "beat",
+    "label": "result"
+   },
+   {
+    "t": 5.163,
+    "type": "box",
+    "label": "result",
+    "x": 185,
+    "y": 706,
+    "w": 2190,
+    "h": 224
+   }
+  ]
+ },
+ "s08_demob.mp4": {
+  "duration": 18.633,
+  "events": [
+   {
+    "t": 1.192,
+    "type": "click",
+    "label": "Upload records",
+    "x": 311,
+    "y": 274,
+    "sound": "click"
+   },
+   {
+    "t": 3.548,
+    "type": "click",
+    "label": "Upload and check",
+    "x": 1474,
+    "y": 916,
+    "sound": "click"
+   },
+   {
+    "t": 4.158,
+    "type": "box",
+    "label": "projection",
+    "x": 185,
+    "y": 693,
+    "w": 2190,
+    "h": 498
+   },
+   {
+    "t": 5.092,
+    "type": "beat",
+    "label": "projection"
+   },
+   {
+    "t": 8.205,
+    "type": "click",
+    "label": "Commit 5 rows",
+    "x": 2250,
+    "y": 419,
+    "sound": "click"
+   },
+   {
+    "t": 10.708,
+    "type": "click",
+    "label": "confirm",
+    "x": 1574,
+    "y": 873,
+    "sound": "click"
+   },
+   {
+    "t": 12.207,
+    "type": "click",
+    "label": "Flags",
+    "x": 924,
+    "y": 274,
+    "sound": "click"
+   },
+   {
+    "t": 12.831,
+    "type": "box",
+    "label": "flags",
+    "x": 187,
+    "y": 710,
+    "w": 2187,
+    "h": 871
+   },
+   {
+    "t": 12.831,
+    "type": "beat",
+    "label": "flags"
+   }
+  ]
+ },
+ "s09_privacy_aicte.mp4": {
+  "duration": 9.133,
+  "events": [
+   {
+    "t": 3.614,
+    "type": "box",
+    "label": "evidence",
+    "x": 185,
+    "y": 858,
+    "w": 2190,
+    "h": 382
+   }
+  ]
+ },
+ "s09_privacy_inst.mp4": {
+  "duration": 23.733,
+  "events": [
+   {
+    "t": 2.173,
+    "type": "click",
+    "label": "open D003",
+    "x": 458,
+    "y": 701,
+    "sound": "click"
+   },
+   {
+    "t": 2.773,
+    "type": "box",
+    "label": "evidence",
+    "x": 185,
+    "y": 376,
+    "w": 2190,
+    "h": 382
+   },
+   {
+    "t": 4.984,
+    "type": "beat",
+    "label": "compare"
+   }
+  ]
+ },
+ "s10_workflow_aicte.mp4": {
+  "duration": 9.233,
+  "events": [
+   {
+    "t": 2.074,
+    "type": "click",
+    "label": "note",
+    "x": 1280,
+    "y": 720,
+    "sound": "click"
+   },
+   {
+    "t": 2.355,
+    "type": "type",
+    "label": "note",
+    "chars": 58,
+    "duration": 1.62
+   },
+   {
+    "t": 6.156,
+    "type": "click",
+    "label": "Request clarification",
+    "x": 384,
+    "y": 860,
+    "sound": "click"
+   },
+   {
+    "t": 6.743,
+    "type": "box",
+    "label": "history",
+    "x": 185,
+    "y": 1000,
+    "w": 2190,
+    "h": 326
+   },
+   {
+    "t": 6.743,
+    "type": "beat",
+    "label": "clarified"
+   }
+  ]
+ },
+ "s10_workflow_auto.mp4": {
+  "duration": 5.4,
+  "events": [
+   {
+    "t": 0.802,
+    "type": "box",
+    "label": "history",
+    "x": 185,
+    "y": 1093,
+    "w": 2190,
+    "h": 326
+   },
+   {
+    "t": 1.607,
+    "type": "beat",
+    "label": "auto"
+   }
+  ]
+ },
+ "s10_workflow_cancel.mp4": {
+  "duration": 50.267,
+  "events": [
+   {
+    "t": 1.923,
+    "type": "click",
+    "label": "open GEC26CSE901",
+    "x": 284,
+    "y": 396,
+    "sound": "click"
+   },
+   {
+    "t": 3.991,
+    "type": "click",
+    "label": "Change status",
+    "x": 2254,
+    "y": 418,
+    "sound": "click"
+   },
+   {
+    "t": 6.279,
+    "type": "click",
+    "label": "New status",
+    "x": 381,
+    "y": 831,
+    "sound": "toggle"
+   },
+   {
+    "t": 7.999,
+    "type": "click",
+    "label": "reason",
+    "x": 1215,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 8.276,
+    "type": "type",
+    "label": "reason",
+    "chars": 31,
+    "duration": 1.24
+   },
+   {
+    "t": 11.26,
+    "type": "click",
+    "label": "Mark as cancelled",
+    "x": 2033,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 11.836,
+    "type": "beat",
+    "label": "ff_start"
+   },
+   {
+    "t": 13.271,
+    "type": "click",
+    "label": "open GEC26CSE902",
+    "x": 288,
+    "y": 383,
+    "sound": "click"
+   },
+   {
+    "t": 15.226,
+    "type": "click",
+    "label": "Change status",
+    "x": 2254,
+    "y": 418,
+    "sound": "click"
+   },
+   {
+    "t": 17.42,
+    "type": "click",
+    "label": "New status",
+    "x": 381,
+    "y": 831,
+    "sound": "toggle"
+   },
+   {
+    "t": 19.238,
+    "type": "click",
+    "label": "reason",
+    "x": 1215,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 19.517,
+    "type": "type",
+    "label": "reason",
+    "chars": 31,
+    "duration": 0.68
+   },
+   {
+    "t": 21.968,
+    "type": "click",
+    "label": "Mark as cancelled",
+    "x": 2033,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 23.94,
+    "type": "click",
+    "label": "open GEC26CSE903",
+    "x": 295,
+    "y": 383,
+    "sound": "click"
+   },
+   {
+    "t": 25.96,
+    "type": "click",
+    "label": "Change status",
+    "x": 2254,
+    "y": 418,
+    "sound": "click"
+   },
+   {
+    "t": 28.129,
+    "type": "click",
+    "label": "New status",
+    "x": 381,
+    "y": 831,
+    "sound": "toggle"
+   },
+   {
+    "t": 29.85,
+    "type": "click",
+    "label": "reason",
+    "x": 1215,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 30.121,
+    "type": "type",
+    "label": "reason",
+    "chars": 31,
+    "duration": 0.68
+   },
+   {
+    "t": 32.858,
+    "type": "click",
+    "label": "Mark as cancelled",
+    "x": 2033,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 34.923,
+    "type": "click",
+    "label": "open GEC26BTECHCSE001",
+    "x": 304,
+    "y": 383,
+    "sound": "click"
+   },
+   {
+    "t": 36.983,
+    "type": "click",
+    "label": "Change status",
+    "x": 2254,
+    "y": 418,
+    "sound": "click"
+   },
+   {
+    "t": 40.563,
+    "type": "click",
+    "label": "New status",
+    "x": 381,
+    "y": 831,
+    "sound": "toggle"
+   },
+   {
+    "t": 44.088,
+    "type": "click",
+    "label": "reason",
+    "x": 1215,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 44.375,
+    "type": "type",
+    "label": "reason",
+    "chars": 31,
+    "duration": 0.68
+   },
+   {
+    "t": 47.254,
+    "type": "click",
+    "label": "Mark as cancelled",
+    "x": 2033,
+    "y": 831,
+    "sound": "click"
+   },
+   {
+    "t": 47.829,
+    "type": "beat",
+    "label": "ff_end"
+   }
+  ]
+ },
+ "s11_priority.mp4": {
+  "duration": 12.733,
+  "events": [
+   {
+    "t": 1.546,
+    "type": "click",
+    "label": "Review priority",
+    "x": 385,
+    "y": 41,
+    "sound": "click"
+   },
+   {
+    "t": 2.198,
+    "type": "box",
+    "label": "disclaimer",
+    "x": 185,
+    "y": -231,
+    "w": 2190,
+    "h": 86
+   },
+   {
+    "t": 3.411,
+    "type": "box",
+    "label": "top",
+    "x": 185,
+    "y": -116,
+    "w": 2190,
+    "h": 734
+   },
+   {
+    "t": 7.596,
+    "type": "click",
+    "label": "Identity candidates",
+    "x": 1081,
+    "y": 164,
+    "sound": "click"
+   },
+   {
+    "t": 8.235,
+    "type": "box",
+    "label": "weights",
+    "x": 185,
+    "y": 534,
+    "w": 2190,
+    "h": 713
+   },
+   {
+    "t": 9.269,
+    "type": "beat",
+    "label": "weights"
+   }
+  ]
+ },
+ "s12_issue_inst.mp4": {
+  "duration": 8.867,
+  "events": [
+   {
+    "t": 1.952,
+    "type": "click",
+    "label": "open record",
+    "x": 272,
+    "y": 878,
+    "sound": "click"
+   },
+   {
+    "t": 3.649,
+    "type": "click",
+    "label": "Signed records tab",
+    "x": 471,
+    "y": 590,
+    "sound": "toggle"
+   },
+   {
+    "t": 5.169,
+    "type": "click",
+    "label": "Issue signed record",
+    "x": 2182,
+    "y": 731,
+    "sound": "click"
+   },
+   {
+    "t": 5.818,
+    "type": "beat",
+    "label": "issued"
+   }
+  ]
+ },
+ "s12_issue_student.mp4": {
+  "duration": 11.633,
+  "events": [
+   {
+    "t": 0.783,
+    "type": "box",
+    "label": "claims",
+    "x": 185,
+    "y": 887,
+    "w": 2190,
+    "h": 556
+   },
+   {
+    "t": 7.43,
+    "type": "click",
+    "label": "Create share token",
+    "x": 372,
+    "y": 1369,
+    "sound": "click"
+   },
+   {
+    "t": 8.084,
+    "type": "box",
+    "label": "qr",
+    "x": 1294,
+    "y": 1426,
+    "w": 1044,
+    "h": 367
+   },
+   {
+    "t": 8.095,
+    "type": "beat",
+    "label": "shared"
+   }
+  ]
+ }
+}

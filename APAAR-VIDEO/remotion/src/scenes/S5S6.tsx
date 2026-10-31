@@ -55,10 +55,11 @@ export const S5Architecture: React.FC = () => {
           </svg>
           {NODES.map((n) => {
             const p = interpolate(f, [s(n.at), s(n.at) + 16], [0, 1], { ...clamp, easing: ease.out });
+            const pop = interpolate(f, [s(n.at), s(n.at) + 16], [0, 1], { ...clamp, easing: ease.pop });
             const tone = n.tone ?? "plain";
             return (
               <div key={n.id} style={{ position: "absolute", left: n.x, top: n.y, width: n.w, height: H, opacity: p,
-                translate: `0 ${interpolate(p, [0, 1], [18, 0])}px`, scale: `${interpolate(p, [0, 1], [0.94, 1])}`,
+                translate: `0 ${interpolate(p, [0, 1], [18, 0])}px`, scale: `${interpolate(pop, [0, 1], [0.92, 1])}`,
                 borderRadius: 12, padding: "16px 20px", fontFamily: FONT,
                 background: tone === "core" ? C.white : tone === "ext" ? "transparent" : "rgba(255,255,255,0.08)",
                 color: tone === "core" ? C.ink : C.white,
@@ -91,7 +92,7 @@ export const S6Close: React.FC = () => {
           <rect x={-8} y={-3} width={16} height={3} fill={C.white} />
           <rect x={-8} y={4} width={10} height={3} fill={C.white} />
         </svg>
-        <Kinetic text="APAAR Student Register" start={8} stagger={4} size={104} align="center" />
+        <Kinetic text="APAAR Student Register" start={8} stagger={4} size={104} align="center" blur />
         <div style={{ height: 4, width: interpolate(f, [s(1.4), s(2.4)], [0, 300], { ...clamp, easing: ease.out }), background: C.saffron, margin: "24px 0 22px" }} />
         <Kinetic text="Every seat counted. Every student verifiable." start={s(1.8)} stagger={3} size={46} weight={400} color={C.mist} align="center" />
         <div style={{ marginTop: 60, display: "flex", gap: 48, fontFamily: FONT, fontSize: 24, color: C.mist,

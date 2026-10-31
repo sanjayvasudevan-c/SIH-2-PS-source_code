@@ -53,8 +53,9 @@ export const Kinetic: React.FC<{
   color?: string;
   align?: "left" | "center";
   exitAt?: number;
+  blur?: boolean;
   style?: React.CSSProperties;
-}> = ({ text, start = 0, stagger = 3, size = 64, weight = 700, color = C.white, align = "left", exitAt, style }) => {
+}> = ({ text, start = 0, stagger = 3, size = 64, weight = 700, color = C.white, align = "left", exitAt, blur = false, style }) => {
   const frame = useCurrentFrame();
   const words = text.split(" ");
   const exit = exitAt === undefined ? 1 : interpolate(frame, [exitAt, exitAt + 12], [1, 0], { ...clamp, easing: ease.in });
@@ -64,6 +65,7 @@ export const Kinetic: React.FC<{
       {words.map((w, i) => (
         <span key={i} style={{ overflow: "hidden", display: "inline-block", paddingBottom: size * 0.08 }}>
           <span style={{ display: "inline-block",
+            filter: blur ? `blur(${interpolate(frame, [start + i * stagger, start + i * stagger + 18], [14, 0], clamp)}px)` : undefined,
             translate: `0 ${interpolate(frame, [start + i * stagger, start + i * stagger + 16], [110, 0], { ...clamp, easing: ease.out })}%` }}>
             {w}
           </span>

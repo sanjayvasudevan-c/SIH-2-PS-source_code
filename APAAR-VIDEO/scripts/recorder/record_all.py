@@ -38,6 +38,18 @@ def api_token(email: str) -> str:
     return r.json()["access_token"]
 
 
+def fresh_share_token(email: str, claims: list[str]) -> str:
+    """Share token for the student's current ACTIVE record (a token from a superseded record fails verification)."""
+    tok = api_token(email)
+    h = {"Authorization": f"Bearer {tok}"}
+    me = httpx.get(f"{BASE}/api/v1/me/record", headers=h).json()
+    creds = [c for c in me.get("credentials", []) if c.get("status") == "ACTIVE"]
+    cid = creds[0]["id"]
+    r = httpx.post(f"{BASE}/api/v1/me/credentials/{cid}/present", headers=h, json={"claims": claims})
+    r.raise_for_status()
+    return r.json()["token"]
+
+
 def api_get(email: str, path: str):
     r = httpx.get(f"{BASE}{path}", headers={"Authorization": f"Bearer {api_token(email)}"})
     r.raise_for_status()
@@ -417,6 +429,7 @@ def s13_verify(b, st, R):
     c = Clip(v, "s13_verify", OUT).start()
     ta = v.locator("textarea")
     c.click(ta, "paste token")
+    st["token"] = fresh_share_token("student.ananya@demo.local", ["name", "institution", "programme", "enrolmentStatus"])
     ta.fill(st["token"])
     c.log("type", label="paste", chars=1, duration=0.1)
     c.hold(500)
@@ -553,7 +566,29 @@ def s17_status(b, st, R):
     finish(c, R)
 
 
-SCENES = [s02_signin, s03_dashboard, s04_upload, s05_fix, s06_commit, s07_seatcheck, s08_demob, s09_privacy,
+def s01_national(b, st, R):
+    """AICTE national register: computed figures, the Narmada MBA excess alert, tabs."""
+    a = new_page(b)
+    sign_in(a, "aicte.admin@demo.local")
+    go(a, "/aicte", "text=Excess alerts")
+    c = Clip(a, "s01_national", OUT).start()
+    c.box("figures", a.locator(".figs"))
+    c.move_to(a.locator(".figs .fig").nth(6), 0.5, 0.6)
+    c.beat("figures")
+    c.hold(1600)
+    alert = a.locator("section.card", has_text="Excess alerts")
+    c.box("alert", alert.locator(".prog-grid > div").first)
+    c.move_to(alert.locator(".prog-grid > div").first, 0.3, 0.45)
+    c.beat("alert")
+    c.hold(2400)
+    c.click(a.locator("[role=tab]", has_text="Programmes"), "Programmes tab", sound="toggle")
+    c.hold(1800)
+    c.click(a.locator("[role=tab]", has_text="Overview"), "Overview tab", sound="toggle")
+    c.hold(900)
+    finish(c, R)
+
+
+SCENES = [s01_national, s02_signin, s03_dashboard, s04_upload, s05_fix, s06_commit, s07_seatcheck, s08_demob, s09_privacy,
           s10_workflow, s11_priority, s12_issue, s13_verify, s14_consent, s15_close, s16_minor, s17_status]
 
 
@@ -569,7 +604,8 @@ def main():
     state: dict = {}
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path=CHROME if Path(CHROME).exists() else None, headless=not args.headed)
-        for scene in SCENES:
+        only = {x for x in args.only.split(",") if x}
+        for scene in [sc for sc in SCENES if not only or sc.__name__ in only]:
             print(f"scene {scene.__name__}", flush=True)
             try:
                 scene(browser, state, results)
@@ -579,7 +615,10 @@ def main():
                         pg.screenshot(path=f"/var/tmp/fail_{scene.__name__}_{i}_{j}.png")
                 raise
         browser.close()
-    (OUT / "index.json").write_text(json.dumps(results, indent=1))
+    idx = OUT / "index.json"
+    merged = json.loads(idx.read_text()) if (only and idx.exists()) else {}
+    merged.update(results)
+    idx.write_text(json.dumps(merged, indent=1))
     print(f"\nRecorded {len(results)} clips, {sum(m['duration'] for m in results.values()):.1f}s of footage -> {OUT}")
 
 

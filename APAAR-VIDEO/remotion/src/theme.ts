@@ -30,6 +30,8 @@ export const ease = {
   out: Easing.bezier(0.16, 1, 0.3, 1), // arrivals
   inOut: Easing.bezier(0.65, 0, 0.35, 1), // camera moves
   in: Easing.bezier(0.7, 0, 0.84, 0), // exits
+  /** small pops (nodes, rings, buttons): one restrained overshoot, then settle */
+  pop: Easing.back(1.5),
 };
 
 export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;

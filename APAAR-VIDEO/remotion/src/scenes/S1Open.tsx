@@ -65,7 +65,7 @@ export const S1Open: React.FC = () => {
             opacity: interpolate(f, [s(10.2), s(11)], [0, 1], clamp) }}>
             Smart India Hackathon · SIH26263
           </div>
-          <Kinetic text="APAAR Student Register" start={s(10.6)} stagger={4} size={112} align="center" />
+          <Kinetic text="APAAR Student Register" start={s(10.6)} stagger={4} size={112} align="center" blur />
           <div style={{ height: 4, width: interpolate(f, [s(12.2), s(13.4)], [0, 260], { ...clamp, easing: ease.out }), background: C.saffron, margin: "26px auto 22px" }} />
           <Kinetic text="Student enrolment register for AICTE-approved institutions" start={s(13)} stagger={2} size={36} weight={400} color={C.mist} align="center" />
         </div>
