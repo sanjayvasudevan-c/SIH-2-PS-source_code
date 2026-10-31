@@ -12,3 +12,4 @@ frontend/dist/
 *.db-wal
 *.db-shm
 demo-production/recordings/
+.taste-skill/

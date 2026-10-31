@@ -33,7 +33,7 @@ All ratios below were measured with the WCAG relative-luminance formula.
 | `--navy-tint` | `#eef3fb` | Row hover, secondary-button hover | surface |
 | `--saffron` | `#f37021` | Decorative rules only (page-title bar, nav underline, footer underline) | not for text |
 | `--saffron-strong` | `#c2410c` | "What's new" tag, focus ring | 5.2:1 with white |
-| `--ink` | `#1b2a41` | Body text | 14.9:1 on white |
+| `--ink` | `#1b2a41` | Body text | 14.4:1 on white |
 | `--ink-2` | `#4a5a70` | Secondary text | 6.5:1 on page |
 | `--ink-3` | `#5f6e82` | Metadata | 5.2:1 on white (was 4.37:1) |
 | `--paper` | `#f3f6f5` | Page background | — |
@@ -50,7 +50,7 @@ All ratios below were measured with the WCAG relative-luminance formula.
 | Red | `#b42318` | `#fbe9e7` | Error, over intake, revoked, failed |
 | Blue | `#2f5d8a` | `#e6eef6` | Open, preview, informational |
 
-**Focus:** a 3 px `--focus` (`#c2410c`) outline, offset 2 px, with a 5 px white halo. This keeps the ring above 3:1 on both the white page and the navy menu.
+**Focus:** a 3 px `--focus` (`#c2410c`) outline (5.2:1 on white), offset 2 px, with a 5 px white halo. On the navy gov bar, menu and footer the outline is white instead (11:1). Form controls keep the same outline and also switch their border to navy, including flagged fields.
 
 ## Typography
 
@@ -77,13 +77,13 @@ All ratios below were measured with the WCAG relative-luminance formula.
   - `--radius` 6 px for controls.
   - `--radius-lg` 8 px for cards, figures and dialogs.
 - **Shadows:**
-  - `--shadow-1` for resting cards.
-  - `--shadow-2` for the sign-in card.
-  - `--shadow-3` for overlays (dialogs, the updates panel, toasts). No glassmorphism or gradients, apart from the faint status wash on key figures that need attention.
+  - Resting surfaces (cards, figures, the sign-in card) have a 1 px border and no shadow: a border or a shadow, never both.
+  - `--shadow-3` only on what floats: dialogs, the updates panel, toasts. The sticky menu keeps a small shadow because it overlaps content while scrolling.
+  - No gradients, glows or glass. The tricolour rule is the one exception: hard-stop flag stripes, the portal's identity.
 - **Motion:**
   - `--dur` 160 ms with `--ease` for hover and focus.
   - Dialogs rise 8 px in 200 ms; toasts 250 ms.
-  - A skeleton shimmer runs while loading.
+  - Loading skeletons pulse in opacity (no moving gradient).
   - All of it collapses to 1 ms under `prefers-reduced-motion: reduce`.
 - **Breakpoints:**
   - 900 px: 3- and 4-column grids become 2 columns; login stacks.
@@ -103,10 +103,10 @@ All ratios below were measured with the WCAG relative-luminance formula.
 | Field | `<Field label hint error>` | Visible label always; hint and error sit under the control, and errors are bold red. |
 | Card | `.card`, `.card.flat` | White, 1 px border, 8 px radius, shadow-1. A leading `h2` gets a divider. `.flat` is for full-bleed tables. |
 | Page heading | `.pagehead` | `h1` with a saffron left rule, muted description, controls aligned right. |
-| Key figures | `<Figure k v tone>` in `.figs` | Separate tiles. `tone="bad"`/`"warn"` adds a coloured left edge, a faint wash and a coloured value. Use only when the API value needs action. |
-| Table | `table` in `.tablewrap` / `.scrollbox` | Sticky header inside scroll boxes, zebra rows, navy-tint hover, right-aligned tabular numbers. |
-| Badge | `<Badge v>` | Status colour by value (see `TONE` in `ui.tsx`). Text is upper-case with underscores turned to spaces. |
-| Simulated marker | `<Badge v="SIMULATED">` → `.b-sim` | Dashed amber outline, regular weight. It marks a data source, not a status. |
+| Key figures | `<Figure k v tone>` in `.figs` | One container split by hairlines; label over value; values in ink. `tone="bad"`/`"warn"` colours only the value, and only when the API value needs action. No tiles, icons or sparklines. |
+| Table | `table` in `.tablewrap` / `.scrollbox` | Rules and alignment: 12 px grey sentence-case headers on white, 1 px row rules, no zebra or header band, navy-tint hover, right-aligned tabular numbers, sticky header inside scroll boxes. |
+| Badge | `<Badge v>` | Pale tint with dark text of the same hue, by value (see `TONE` in `ui.tsx`). API codes are shown in sentence case (`OVER_INTAKE` → "Over intake"). |
+| Simulated marker | `<Badge v="SIMULATED">` and `<Apaar>` → `.b-sim` | Dashed amber outline, regular weight. It marks a data source, not a status. |
 | Tabs | `<Tabs>` | `role="tablist"`/`tab`, 44 px tall, navy 3 px underline on the active tab. |
 | Banner | `.banner.info/.warn/.error/.ok` | 4 px status edge on the left; `role="alert"` for errors. |
 | Toast | `.banner.toast` | Fixed bottom-right so it never shifts the layout; shadow-3. |

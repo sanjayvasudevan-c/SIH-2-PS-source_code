@@ -51,6 +51,7 @@ export default function Verify() {
           <div className="small">Issued {fmtDate(status.issued_at)}, valid until {fmtDate(status.valid_until)}. This QR code confirms status only; ask the student for a token to see details, or <Link to="/verifier/requests">request verification with consent</Link>.</div>
         </section>
       )}
+      <div className="grid verify-grid">
       <section className="card">
         <Field label="Record token"><textarea value={token} onChange={(e) => { setToken(e.target.value); setTampered(false); }} rows={5} className="mono" /></Field>
         <div className="row">
@@ -61,6 +62,19 @@ export default function Verify() {
         </div>
         {tampered && <p className="small muted" style={{ marginTop: 8 }}>The token above was edited without re-signing, to show what a forged record looks like.</p>}
       </section>
+      <section className="card">
+        <h2>What is checked</h2>
+        <ol className="steps">
+          <li><strong>Structure</strong><span>The token is a well-formed signed record.</span></li>
+          <li><strong>Known issuer key</strong><span>It names a signing key published by this register.</span></li>
+          <li><strong>Signature</strong><span>The Ed25519 signature matches the signed part.</span></li>
+          <li><strong>Shared details</strong><span>Each detail the student shared matches a value fixed in the signature.</span></li>
+          <li><strong>Validity period</strong><span>The record has not expired.</span></li>
+          <li><strong>Revocation status</strong><span>The institution has not revoked it.</span></li>
+        </ol>
+        <p className="small muted">The checks run in this order; once one fails, the rest are skipped.</p>
+      </section>
+      </div>
       <ErrorBox error={err} />
       {res && (
         <section className="card" aria-live="polite">
@@ -68,7 +82,7 @@ export default function Verify() {
             {!res.valid && " — one or more checks failed."}</div>
           {res.checks.map((c: any) => (
             <div className="check" key={c.check}>
-              <span className={`ico ${c.result}`} aria-hidden>{c.result === "pass" ? "✓" : c.result === "fail" ? "✕" : "–"}</span>
+              <span className={`ico ${c.result}`} aria-hidden><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{c.result === "pass" ? <path d="M2.5 6.5l2.2 2.2L9.5 3.5" /> : c.result === "fail" ? <path d="M3 3l6 6M9 3l-6 6" /> : <path d="M3 6h6" />}</svg></span>
               <div><strong>{c.label}</strong> <span className="sr-only">{c.result}</span><div className="small">{c.sentence}</div></div>
             </div>
           ))}

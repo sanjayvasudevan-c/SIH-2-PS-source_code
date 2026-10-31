@@ -55,7 +55,12 @@ const TONE: Record<string, string> = {
 
 export function Badge({ v, children }: { v?: string | null; children?: ReactNode }) {
   if (!v && !children) return null;
-  return <span className={`badge b-${TONE[v || ""] || "grey"}`}>{children ?? (v || "").replace(/_/g, " ")}</span>;
+  return <span className={`badge b-${TONE[v || ""] || "grey"}`}>{children ?? sentence(v || "")}</span>;
+}
+
+function sentence(code: string): string {
+  const s = code.replace(/_/g, " ").toLowerCase();
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function Apaar({ value, status, masked }: { value?: string | null; status?: string; masked?: boolean }) {
@@ -63,7 +68,7 @@ export function Apaar({ value, status, masked }: { value?: string | null; status
     <span className="row" style={{ gap: 6, display: "inline-flex" }}>
       <span className="mono">{value || "—"}</span>
       {status && <Badge v={status} />}
-      <span className="badge b-amber" title="APAAR registry checks run against a synthetic registry">SIMULATED</span>
+      <span className="badge b-sim" title="APAAR registry checks run against a synthetic registry">Simulated</span>
       {masked && <span className="sr-only">masked</span>}
     </span>
   );
@@ -133,11 +138,13 @@ export function Findings({ items, onUseSuggestion }: { items: Finding[]; onUseSu
 export function Field({ label, children, hint, error, flagged }: { label: string; children: ReactNode; hint?: string; error?: string; flagged?: boolean }) {
   // Tie the visible label, hint and error to the control so screen readers announce them (WCAG 1.3.1, 3.3.1).
   const auto = useId();
-  const single = isValidElement(children) ? (children as ReactElement<Record<string, unknown>>) : null;
+  const el = isValidElement(children) ? (children as ReactElement<Record<string, unknown>>) : null;
+  const single = el && ["input", "select", "textarea"].includes(el.type as string) ? el : null;
   const id = (single?.props.id as string | undefined) || auto;
-  const describedBy = [hint && `${id}-hint`, error && `${id}-err`].filter(Boolean).join(" ") || undefined;
+  const describedBy = [single?.props["aria-describedby"], hint && `${id}-hint`, error && `${id}-err`].filter(Boolean).join(" ") || undefined;
   const control = single
-    ? cloneElement(single, { id, "aria-describedby": describedBy, "aria-invalid": error || flagged ? true : undefined })
+    ? cloneElement(single, { id, "aria-describedby": describedBy,
+      "aria-invalid": error || flagged ? true : (single.props["aria-invalid"] as boolean | undefined) })
     : children;
   return (
     <div className={`field${flagged ? " flag" : ""}`}>
