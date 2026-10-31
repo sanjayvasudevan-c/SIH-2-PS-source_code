@@ -15,6 +15,7 @@ from ..models import CorrectionRequest, Credential, Enrolment, Notification, Stu
 from ..security import INST_ROLES, Actor, ApiError, require_roles
 from . import credentials as creds
 from .api_credentials import qr_svg
+from .engine import require_guardian_consent
 from .views import enrolment_view, student_view
 
 router = APIRouter(prefix="/api/v1", tags=["students"])
@@ -55,6 +56,7 @@ def present(cred_id: str, body: PresentIn, actor: Actor = Depends(student_only),
     c = db.get(Credential, cred_id)
     if c is None or c.student_id != actor.student_id:
         raise ApiError(404, "Not found.")
+    require_guardian_consent(db.get(Student, c.student_id))
     unknown = [x for x in body.claims if x not in creds.CLAIMS]
     if unknown:
         raise ApiError(422, "Unknown claim(s): " + ", ".join(unknown))

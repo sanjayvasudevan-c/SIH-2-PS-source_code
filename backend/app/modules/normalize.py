@@ -21,8 +21,10 @@ TEMPLATE_COLUMNS = [
     "social_category",
     "email",
     "apaar_pending_reason",
+    "guardian_consent_recorded",
 ]
-OPTIONAL_COLUMNS = {"apaar_id", "citizenship_country", "social_category", "email", "apaar_pending_reason"}
+OPTIONAL_COLUMNS = {"apaar_id", "citizenship_country", "social_category", "email", "apaar_pending_reason",
+                    "guardian_consent_recorded"}
 REQUIRED_COLUMNS = [c for c in TEMPLATE_COLUMNS if c not in OPTIONAL_COLUMNS]
 
 HEADER_ALIASES = {
@@ -55,7 +57,11 @@ HEADER_ALIASES = {
     "category": "social_category",
     "email_id": "email",
     "pending_reason": "apaar_pending_reason",
+    "guardian_consent": "guardian_consent_recorded",
+    "parental_consent": "guardian_consent_recorded",
 }
+CONSENT_YES = {"Y", "YES", "TRUE", "1"}
+CONSENT_NO = {"N", "NO", "FALSE", "0", ""}
 
 GENDERS = {"M": "M", "MALE": "M", "F": "F", "FEMALE": "F", "T": "T", "TRANSGENDER": "T", "O": "O", "OTHER": "O"}
 NATIONALITY = {
@@ -135,6 +141,16 @@ def clean_cell(value) -> str:
 
 def clean_apaar(value: str) -> str:
     return re.sub(r"[\s-]", "", value or "")
+
+
+def parse_consent_flag(value: str) -> bool | None:
+    """Y/YES/TRUE/1 -> True; N/NO/FALSE/0/blank -> False; anything else -> None (invalid)."""
+    v = (value or "").strip().upper()
+    if v in CONSENT_YES:
+        return True
+    if v in CONSENT_NO:
+        return False
+    return None
 
 
 def finding(rule_id, severity, field, message, evidence=None, suggestion=None) -> dict:
@@ -243,5 +259,12 @@ def normalise_row(raw: dict) -> tuple[dict, dict, list[dict]]:
             bad("apaar_pending_reason", "Pending reason must be one of " + ", ".join(PENDING_REASONS) + ".")
         else:
             parsed["apaar_pending_reason"] = data["apaar_pending_reason"] = r
+
+    consent = parse_consent_flag(data["guardian_consent_recorded"])
+    parsed["guardian_consent_recorded"] = bool(consent)
+    if consent is None:
+        bad("guardian_consent_recorded", "Guardian consent must be Y or N (or blank if not recorded).")
+    else:
+        data["guardian_consent_recorded"] = "Y" if consent else ""
 
     return data, parsed, findings

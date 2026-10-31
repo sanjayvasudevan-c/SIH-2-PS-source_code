@@ -10,6 +10,7 @@ const EDITABLE: [string, string][] = [
   ["citizenship_country", "Citizenship country"], ["apaar_id", "APAAR ID"], ["institution_student_id", "Roll number"],
   ["programme_code", "Programme code"], ["seat_category", "Seat category"], ["admission_date", "Admission date"],
   ["social_category", "Social category"], ["email", "Email"], ["apaar_pending_reason", "APAAR pending reason"],
+  ["guardian_consent_recorded", "Guardian consent recorded (Y or blank)"],
 ];
 
 function current(e: any): Record<string, string> {
@@ -19,7 +20,7 @@ function current(e: any): Record<string, string> {
     citizenship_country: s.citizenship_country || "", apaar_id: s.apaar_masked ? "" : s.apaar_id || "",
     institution_student_id: e.institution_student_id, programme_code: e.programme_code, seat_category: e.seat_category,
     admission_date: e.admission_date, social_category: s.social_category || "", email: s.email || "",
-    apaar_pending_reason: s.apaar_pending_reason || "",
+    apaar_pending_reason: s.apaar_pending_reason || "", guardian_consent_recorded: s.guardian_consent_recorded ? "Y" : "",
   };
 }
 

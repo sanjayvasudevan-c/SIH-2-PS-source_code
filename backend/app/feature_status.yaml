@@ -4,11 +4,11 @@
 # NOT_BUILT = designed, not implemented; EXTERNAL = needs a government agreement or procurement.
 
 - id: validation-engine
-  title: Single validation engine for upload, manual entry, corrections and ERP push (25 rules)
+  title: Single validation engine for upload, manual entry, corrections and ERP push (26 rules)
   status: PROTOTYPE
   routes: ["POST /api/v1/enrolments", "PATCH /api/v1/enrolments/{enrolment_id}", "GET /api/v1/rules", "PATCH /api/v1/rules/{rule_id}"]
   tests:
-    - backend/tests/test_rules.py::test_catalogue_has_25_rules
+    - backend/tests/test_rules.py::test_catalogue_has_26_rules
     - backend/tests/test_rules.py::test_repository_rules_skipped_on_gating_errors
     - backend/tests/test_rules.py::test_disabled_rule_and_severity_change
     - backend/tests/test_corrections.py::test_manual_entry_requires_acknowledgement_for_review
@@ -176,6 +176,16 @@
     - backend/tests/test_security.py::test_analyst_sees_masked_apaar_and_no_sensitive_fields
     - backend/tests/test_security.py::test_login_lockout_after_five_failures
     - backend/tests/test_security.py::test_security_headers
+
+- id: minor-guardian-consent
+  title: R015 hold for students under 18 until the institution records guardian consent
+  status: PROTOTYPE
+  routes: ["POST /api/v1/me/credentials/{cred_id}/present", "POST /api/v1/verification/requests/{req_id}/consent"]
+  tests:
+    - backend/tests/test_rules.py::test_guardian_consent_parsing
+    - backend/tests/test_rules.py::test_minor_boundary_dates
+    - backend/tests/test_rules.py::test_r015_review_for_minor_without_consent
+    - backend/tests/test_credentials.py::test_minor_held_from_share_and_consent
 
 - id: claims-register
   title: This feature-status register, checked against routes and tests

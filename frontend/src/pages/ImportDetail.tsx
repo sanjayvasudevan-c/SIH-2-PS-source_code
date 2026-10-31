@@ -13,6 +13,7 @@ const FIELDS: [string, string, string[]?][] = [
   ["seat_category", "Seat category", ["REGULAR", "NRI", "SN_FN_OCI", "SN_CIWG", "SN_TFW", "SN_OTHER"]],
   ["admission_date", "Admission date"], ["social_category", "Social category", ["", "GEN", "EWS", "OBC", "SC", "ST"]],
   ["email", "Email"], ["apaar_pending_reason", "APAAR pending reason", ["", "FOREIGN_NATIONAL", "APPLIED_AWAITING_ID", "OTHER_DOCUMENTED"]],
+  ["guardian_consent_recorded", "Guardian consent recorded", ["", "Y"]],
 ];
 
 export default function ImportDetail() {

@@ -184,3 +184,34 @@ def test_correction_request_reaches_institution_queue(client, as_):
     acc = client.post(f"/api/v1/correction-requests/{r.json()['id']}/actions", headers=as_("kaveri.staff@demo.local"),
                       json={"action": "ACCEPT", "note": "Will correct"}).json()
     assert acc["status"] == "ACCEPTED" and acc["prefill"]["field"] == "full_name"
+
+
+MINOR = "student.sneha@demo.local"
+
+
+def test_minor_held_from_share_and_consent(client, as_):
+    with SessionLocal() as s:
+        st = s.execute(select(Student).where(Student.full_name == "Sneha Patil")).scalar_one()
+        assert st.guardian_consent_recorded is False
+        cred = s.execute(select(Credential).where(Credential.student_id == st.id)).scalars().first()
+        en = s.execute(select(Enrolment).where(Enrolment.student_id == st.id)).scalar_one()
+        apaar, dob, cid, eid = st.apaar_id, st.date_of_birth.isoformat(), cred.id, en.id
+    m = as_(MINOR)
+    r = client.post(f"/api/v1/me/credentials/{cid}/present", headers=m, json={"claims": ["name"]})
+    assert r.status_code == 409 and r.json()["error"]["held"] == "R015"
+    v = as_("verifier@demo.local")
+    req = client.post("/api/v1/verification/requests", headers=v,
+                      json={"apaar_id": apaar, "date_of_birth": dob, "purpose": "Internship eligibility check"}).json()
+    held = client.post(f"/api/v1/verification/requests/{req['id']}/consent", headers=m, json={"decision": "APPROVE"})
+    assert held.status_code == 409 and held.json()["error"]["held"] == "R015"
+    req2 = client.post("/api/v1/verification/requests", headers=v,
+                       json={"apaar_id": apaar, "date_of_birth": dob, "purpose": "Internship eligibility check"}).json()
+    assert client.post(f"/api/v1/verification/requests/{req2['id']}/consent", headers=m,
+                       json={"decision": "DENY"}).status_code == 200
+    detail = client.get(f"/api/v1/enrolments/{eid}", headers=as_("brahmaputra.admin@demo.local")).json()
+    assert detail["enrolment"]["student"]["guardian_consent_recorded"] is False
+    fix = client.patch(f"/api/v1/enrolments/{eid}", headers=as_("brahmaputra.admin@demo.local"),
+                       json={"changes": {"guardian_consent_recorded": "Y"}, "reason": "Guardian consent form received",
+                             "version": detail["enrolment"]["version"]})
+    assert fix.status_code == 200, fix.text
+    assert client.post(f"/api/v1/me/credentials/{cid}/present", headers=m, json={"claims": ["name"]}).status_code == 200

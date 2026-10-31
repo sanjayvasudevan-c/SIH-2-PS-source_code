@@ -24,7 +24,7 @@ from ..models import (
     RecordRevision,
     Student,
 )
-from ..security import Actor, apaar_ref
+from ..security import Actor, ApiError, apaar_ref
 from . import identity, issues
 from .apaar_adapter import did_you_mean, get_adapter
 from .ledger import OCCUPYING
@@ -41,6 +41,7 @@ STUDENT_FIELDS = (
     "citizenship_country",
     "social_category",
     "email",
+    "guardian_consent_recorded",
 )
 
 
@@ -64,6 +65,21 @@ class RowPlan:
 
 def _age(dob: date, on: date) -> int:
     return on.year - dob.year - ((on.month, on.day) < (dob.month, dob.day))
+
+
+def is_minor(dob: date, on: date) -> bool:
+    """Under 18 on the given date (a 29 February birthday turns 18 on 1 March in non-leap years)."""
+    return _age(dob, on) < 18
+
+
+MINOR_HOLD = ("This student is under 18 and the institution has not recorded guardian consent. "
+              "The institution must record it before the record can be shared or verified.")
+
+
+def require_guardian_consent(st: Student) -> None:
+    """R015 hold: refuse sharing or consent-based verification of a minor without recorded guardian consent."""
+    if is_minor(st.date_of_birth, today()) and not st.guardian_consent_recorded:
+        raise ApiError(409, MINOR_HOLD, held="R015")
 
 
 def _row_rules(p: dict, f: list, programmes: dict, intake_keys: set, upload_year: str) -> str | None:
@@ -104,6 +120,11 @@ def _row_rules(p: dict, f: list, programmes: dict, intake_keys: set, upload_year
         elif age > 45:
             f.append(finding("R011_DATE_UNUSUAL", None, "date_of_birth",
                              f"Age at admission is {age}. Please confirm.", {"age_at_admission": age}))
+    date_errors = any(x["rule_id"] == "R010_DATE_LOGIC" for x in f)
+    if dob and not date_errors and is_minor(dob, now) and not p["guardian_consent_recorded"]:
+        f.append(finding("R015_MINOR_GUARDIAN_CONSENT", None, "guardian_consent_recorded",
+                         f"The student is {_age(dob, now)}; record the guardian's consent before the record is "
+                         "shared or verified.", {"age_today": _age(dob, now)}))
     year = p["academic_year"] or upload_year
     if adm and year:
         start = int(year[:4])
@@ -528,6 +549,7 @@ def _open_review_issues(db, plan: RowPlan, st: Student, en: Enrolment, instituti
         rid = f["rule_id"]
         common = dict(rule_id=rid, institution_id=institution.id, academic_year=year, actor=actor, severity="REVIEW")
         if rid in ("R004_APAAR_PENDING", "R007_APAAR_MISMATCH", "D004_ATTR_CONFLICT", "R011_DATE_UNUSUAL",
+                   "R015_MINOR_GUARDIAN_CONSENT",
                    "R008_APAAR_UNVERIFIED", "F003_POSSIBLE_DUP_IN_FILE", "D001_EXISTING_RECORD"):
             issues.open_or_update(
                 db, entity_type="ENROLMENT", entity_id=en.id, dedupe_key=f"{en.id}",

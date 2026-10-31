@@ -15,6 +15,7 @@ from ..db import get_db, utcnow
 from ..models import Credential, Enrolment, Student, VerificationRequest
 from ..security import ANONYMOUS, Actor, ApiError, client_ip, current_actor, limiter, mask_apaar, require_roles
 from . import credentials as creds
+from .engine import require_guardian_consent
 from .normalize import parse_date
 
 router = APIRouter(prefix="/api/v1/verification", tags=["verification"])
@@ -140,6 +141,8 @@ def consent(req_id: str, body: ConsentIn, actor: Actor = Depends(require_roles("
         raise ApiError(409, f"You already decided this request ({r.status.lower()}).")
     if utcnow() > r.expires_at:
         raise ApiError(409, "This request has expired.")
+    if body.decision == "APPROVE":
+        require_guardian_consent(db.get(Student, r.student_id))
     r.status = "APPROVED" if body.decision == "APPROVE" else "DENIED"
     r.consent_decided_at = utcnow()
     audit.record(db, actor, "consent.decision", "verification_request", r.id, detail={"decision": r.status})

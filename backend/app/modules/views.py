@@ -23,6 +23,7 @@ def student_view(st: Student, actor: Actor, owning_institution_ids: set[str]) ->
         "apaar_status": st.apaar_status,
         "apaar_pending_reason": st.apaar_pending_reason,
         "apaar_check_mode": "SIMULATED",
+        "guardian_consent_recorded": st.guardian_consent_recorded,
         "social_category": st.social_category if sensitive else None,
         "email": st.email if sensitive else None,
         "version": st.version,
@@ -69,4 +70,5 @@ def row_from_enrolment(db: Session, en: Enrolment) -> dict:
         "social_category": st.social_category or "",
         "email": st.email or "",
         "apaar_pending_reason": st.apaar_pending_reason or "",
+        "guardian_consent_recorded": "Y" if st.guardian_consent_recorded else "",
     }

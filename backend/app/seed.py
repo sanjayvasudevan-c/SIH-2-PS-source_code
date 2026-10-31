@@ -126,6 +126,7 @@ class Gen:
 
 def _row(**kw) -> dict:
     r = {c: "" for c in TEMPLATE_COLUMNS}
+    r["guardian_consent_recorded"] = "Y"  # seeded minors have consent recorded unless a row says otherwise
     r.update({k: (v.isoformat() if isinstance(v, date) else str(v)) for k, v in kw.items() if v is not None})
     return r
 
@@ -303,7 +304,7 @@ def run(reset: bool = True, write_samples: bool = True, quiet: bool = False) -> 
                     serial = 0
 
                     def add(name, dob, g, seat="REGULAR", nat="INDIAN", country="India", apaar=None, reason=None,
-                            adm=None, registry_name=None):
+                            adm=None, registry_name=None, consent="Y"):
                         nonlocal serial
                         serial += 1
                         aid = apaar if apaar is not None else gen.apaar(idx, year)
@@ -314,7 +315,8 @@ def run(reset: bool = True, write_samples: bool = True, quiet: bool = False) -> 
                                          citizenship_country=country, programme_code=pcode, academic_year=year,
                                          seat_category=seat, admission_date=adm or _adm_date(rng, year),
                                          social_category=rng.choice(["GEN", "OBC", "SC", "ST", "EWS", ""]),
-                                         email=None, apaar_pending_reason=reason))
+                                         email=None, apaar_pending_reason=reason,
+                                         guardian_consent_recorded=consent))
                         return aid
 
                     by = _birth_years(level, year)
@@ -337,6 +339,13 @@ def run(reset: bool = True, write_samples: bool = True, quiet: bool = False) -> 
                             continue
                         if year == "2026-27" and short == "brahmaputra" and pcode == "DIP-ME" and i == 0:
                             add("Mohamed Farooq", date(2002, 2, 22), "M", apaar="", reason="APPLIED_AWAITING_ID")
+                            continue
+                        if year == "2026-27" and short == "brahmaputra" and pcode == "DIP-ME" and i in (5, 6):
+                            # minors whose guardian consent is not yet recorded (R015 demo)
+                            n, d, g = (("Sneha Patil", date(2010, 3, 15), "F") if i == 5
+                                       else ("Arjun Gowda", date(2010, 9, 2), "M"))
+                            gen.reserve(n, d)
+                            add(n, d, g, consent="")
                             continue
                         n, d, g = gen.person(by)
                         reg_name = None
@@ -409,6 +418,14 @@ def run(reset: bool = True, write_samples: bool = True, quiet: bool = False) -> 
 
         audit.record(db, actor_from_user(users["kaveri.admin@demo.local"]), "credential.issue", "credential", cred.id,
                      detail={"enrolment_id": en.id, "seed": True})
+
+        # Student account for Sneha Patil (17, guardian consent not yet recorded), with one signed record
+        sneha = db.execute(select(Student).where(Student.full_name == "Sneha Patil")).scalar_one()
+        user("student.sneha@demo.local", "Sneha Patil (student, synthetic)", "STUDENT", student_id=sneha.id)
+        en_s = db.execute(select(Enrolment).where(Enrolment.student_id == sneha.id)).scalar_one()
+        cred_s = credentials.issue(db, en_s, users["brahmaputra.admin@demo.local"].id)
+        audit.record(db, actor_from_user(users["brahmaputra.admin@demo.local"]), "credential.issue", "credential",
+                     cred_s.id, detail={"enrolment_id": en_s.id, "seed": True})
 
         # Kaveri ERP API key (scopes enrolments:write, seat:check); shown once, stored only as a hash
         key, prefix = new_api_key()

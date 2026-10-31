@@ -30,9 +30,9 @@ def rules(plan):
     return {f["rule_id"] for f in plan.findings}
 
 
-def test_catalogue_has_25_rules(db):
-    assert len(CATALOGUE) == 25
-    assert db.execute(select(ValidationRule)).scalars().all().__len__() == 25
+def test_catalogue_has_26_rules(db):
+    assert len(CATALOGUE) == 26
+    assert db.execute(select(ValidationRule)).scalars().all().__len__() == 26
 
 
 def test_base_row_is_valid(db, kaveri):
@@ -246,3 +246,48 @@ def test_disabled_rule_and_severity_change(db, kaveri):
 def test_findings_shape(db, kaveri):
     f = check(db, kaveri, dict(BASE, gender="X"))[0].findings[0]
     assert set(f) >= {"rule_id", "severity", "field", "message", "evidence"}
+
+
+# ---------------------------------------------------------------- R015 minors (guardian consent)
+
+from datetime import date  # noqa: E402
+
+from app.modules.normalize import parse_consent_flag  # noqa: E402
+
+MINOR_DIP = {
+    "apaar_id": "", "apaar_pending_reason": "APPLIED_AWAITING_ID", "institution_student_id": "BPE26T001",
+    "full_name": "Test Minor", "date_of_birth": "2010-01-01", "gender": "F", "nationality_status": "INDIAN",
+    "citizenship_country": "India", "programme_code": "DIP-ME", "academic_year": "2026-27",
+    "seat_category": "REGULAR", "admission_date": "2026-08-03",
+}
+
+
+@pytest.fixture
+def brahmaputra(db):
+    return db.execute(select(Institution).where(Institution.short_name == "brahmaputra")).scalar_one()
+
+
+def test_guardian_consent_parsing(db, kaveri):
+    for v in ("Y", "yes", "TRUE", "1"):
+        assert parse_consent_flag(v) is True
+    for v in ("N", "no", "false", "0", ""):
+        assert parse_consent_flag(v) is False
+    assert parse_consent_flag("maybe") is None
+    p = check(db, kaveri, dict(BASE, guardian_consent_recorded="maybe"))[0]
+    assert any(f["rule_id"] == "R002_FORMAT" and f["field"] == "guardian_consent_recorded" for f in p.findings)
+
+
+def test_minor_boundary_dates():
+    on = date(2026, 10, 27)
+    assert not engine.is_minor(date(2008, 10, 27), on)
+    assert engine.is_minor(date(2008, 10, 28), on)
+    assert engine.is_minor(date(2008, 2, 29), date(2026, 2, 28))
+    assert not engine.is_minor(date(2008, 2, 29), date(2026, 3, 1))
+
+
+def test_r015_review_for_minor_without_consent(db, brahmaputra, kaveri):
+    p = check(db, brahmaputra, MINOR_DIP)[0]
+    r015 = [f for f in p.findings if f["rule_id"] == "R015_MINOR_GUARDIAN_CONSENT"]
+    assert r015 and r015[0]["severity"] == "REVIEW"
+    assert "R015_MINOR_GUARDIAN_CONSENT" not in rules(check(db, brahmaputra, dict(MINOR_DIP, guardian_consent_recorded="Y"))[0])
+    assert "R015_MINOR_GUARDIAN_CONSENT" not in rules(check(db, kaveri, BASE)[0])  # adult

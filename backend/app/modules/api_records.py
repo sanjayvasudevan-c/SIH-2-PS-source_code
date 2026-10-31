@@ -188,7 +188,8 @@ class PatchIn(BaseModel):
     correction_request_id: str | None = None
 
 
-MASTER_FIELDS = {"full_name", "date_of_birth", "gender", "nationality_status", "citizenship_country", "apaar_id"}
+MASTER_FIELDS = {"full_name", "date_of_birth", "gender", "nationality_status", "citizenship_country", "apaar_id",
+                 "guardian_consent_recorded"}
 
 
 @router.patch("/enrolments/{enrolment_id}")

@@ -139,6 +139,7 @@ class Student(Base):
     citizenship_country: Mapped[str | None] = mapped_column(String(60))
     social_category: Mapped[str | None] = mapped_column(String(20))
     email: Mapped[str | None] = mapped_column(String(200))
+    guardian_consent_recorded: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = created()
     updated_at: Mapped[datetime] = updated()

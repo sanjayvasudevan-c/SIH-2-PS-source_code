@@ -6,7 +6,7 @@ import { ErrorBox, Field, Findings, useToast } from "../components/ui";
 const EMPTY = {
   apaar_id: "", apaar_pending_reason: "", institution_student_id: "", full_name: "", date_of_birth: "", gender: "F",
   nationality_status: "INDIAN", citizenship_country: "India", programme_code: "", academic_year: CURRENT_YEAR,
-  seat_category: "REGULAR", admission_date: "", social_category: "", email: "",
+  seat_category: "REGULAR", admission_date: "", social_category: "", email: "", guardian_consent_recorded: "",
 };
 
 export default function AddStudent() {
@@ -74,6 +74,9 @@ export default function AddStudent() {
           <Field label="Social category (optional, sensitive)"><select value={f.social_category} onChange={set("social_category")}>
             <option value="">(not given)</option>{["GEN", "EWS", "OBC", "SC", "ST"].map((x) => <option key={x}>{x}</option>)}</select></Field>
           <Field label="Email (optional)" flagged={flagged.has("email")}><input type="email" value={f.email} onChange={set("email")} /></Field>
+          <Field label="Guardian consent recorded (needed if under 18)" flagged={flagged.has("guardian_consent_recorded")}>
+            <select value={f.guardian_consent_recorded} onChange={set("guardian_consent_recorded")}>
+              <option value="">Not recorded</option><option value="Y">Yes, recorded</option></select></Field>
         </div>
         <ErrorBox error={err} />
         {findings.length > 0 && <div style={{ marginBottom: 10 }}><Findings items={findings} /></div>}
