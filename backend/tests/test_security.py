@@ -121,3 +121,34 @@ def test_password_hash_iterations(seeded):
     with SessionLocal() as s:
         h = s.execute(select(User.password_hash)).scalars().first()
     assert h.startswith("pbkdf2_sha256$") and int(h.split("$")[1]) >= 210_000
+
+
+def test_unknown_email_runs_password_hash(client, seeded, monkeypatch):
+    from app.modules import api_auth
+
+    calls = []
+    real = api_auth.verify_password
+    monkeypatch.setattr(api_auth, "verify_password", lambda pw, stored: calls.append(1) or real(pw, stored))
+    r = client.post("/api/v1/auth/login", json={"email": "nobody@example.org", "password": "x"})
+    assert r.status_code == 401
+    assert len(calls) == 1
+
+
+def test_demo_accounts_hidden_without_demo_mode(client, seeded, monkeypatch):
+    from app.config import settings
+
+    monkeypatch.setattr(settings, "demo_mode", False)
+    assert client.get("/api/v1/auth/demo-accounts").status_code == 404
+    assert client.get("/api/v1/config").json()["demo_mode"] is False
+    monkeypatch.setattr(settings, "demo_mode", True)
+    r = client.get("/api/v1/auth/demo-accounts")
+    assert r.status_code == 200 and r.json()
+    assert client.get("/api/v1/config").json()["demo_mode"] is True
+
+
+def test_unknown_and_wrong_password_same_message(client, seeded):
+    a = client.post("/api/v1/auth/login", json={"email": "nobody@example.org", "password": "x"})
+    b = client.post("/api/v1/auth/login", json={"email": "verifier@demo.local", "password": "wrong"})
+    assert a.status_code == b.status_code == 401
+    assert a.json()["error"]["message"] == b.json()["error"]["message"]
+    assert client.post("/api/v1/auth/login", json={"email": "verifier@demo.local", "password": PASSWORD}).status_code == 200

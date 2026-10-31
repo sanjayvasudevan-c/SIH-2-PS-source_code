@@ -15,7 +15,9 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<ApiError | null>(null);
   const [busy, setBusy] = useState(false);
-  const accounts = useApi<{ email: string; full_name: string; role: string }[]>("/api/v1/auth/demo-accounts");
+  const cfg = useApi<{ demo_mode: boolean }>("/api/v1/config");
+  const demo = cfg.data?.demo_mode === true;
+  const accounts = useApi<{ email: string; full_name: string; role: string }[]>(demo ? "/api/v1/auth/demo-accounts" : null, [demo]);
 
   async function submit(e?: FormEvent, override?: { email: string }) {
     e?.preventDefault();
@@ -52,7 +54,7 @@ export default function Login() {
           <li>Signed records that students share selectively; employers verify only with the student's consent.</li>
         </ul>
       </section>
-      <section className="card">
+      {demo && <section className="card">
         <h2>Demo accounts</h2>
         <p className="muted small">All accounts are synthetic and use the password <code>Demo@2026</code>. Choose one to sign in.</p>
         {accounts.loading && <p className="muted">Loading accounts…</p>}
@@ -65,7 +67,7 @@ export default function Login() {
           </button>
         ))}
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

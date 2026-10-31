@@ -61,7 +61,13 @@ def main() -> int:
             for email, paths in TOUR.items():
                 page.goto(f"{args.base}/#/login")
                 page.wait_for_load_state("networkidle")
-                page.get_by_text(email, exact=True).click()
+                picker = page.get_by_text(email, exact=True)
+                if picker.count():  # DEMO_MODE=1: one-click demo account
+                    picker.click()
+                else:  # DEMO_MODE=0: type the credentials
+                    page.fill("input[type=email]", email)
+                    page.fill("input[type=password]", "Demo@2026")
+                    page.click("button[type=submit]")
                 page.wait_for_selector("text=Sign out", timeout=15000)
                 for entry in paths:
                     errors.clear()

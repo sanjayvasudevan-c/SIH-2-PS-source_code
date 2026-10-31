@@ -68,6 +68,7 @@ class Settings:
         self.submission_deadline = os.environ.get("SUBMISSION_DEADLINE", "2026-11-30")
         self.adapter_mode = os.environ.get("APAAR_ADAPTER_MODE", "simulated")  # simulated | unavailable
         self.live_events = os.environ.get("LIVE_EVENTS", "0" if ON_VERCEL else "1") == "1"
+        self.demo_mode = os.environ.get("DEMO_MODE", "0") == "1"  # lists demo logins on the sign-in page
         self.frontend_dist = Path(os.environ.get("FRONTEND_DIST", REPO_ROOT / "frontend" / "dist"))
 
 

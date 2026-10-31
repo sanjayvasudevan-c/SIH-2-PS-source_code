@@ -18,10 +18,10 @@ seed: ## reset the database and load deterministic synthetic data + sample files
 	cd backend && ../$(BIN)/python -m app.seed --reset
 
 run: ## start the app (API + built frontend) on http://localhost:$(PORT)
-	cd backend && ../$(BIN)/uvicorn app.main:app --host 0.0.0.0 --port $(PORT)
+	cd backend && DEMO_MODE=1 ../$(BIN)/uvicorn app.main:app --host 0.0.0.0 --port $(PORT)
 
 dev: ## backend with reload; run `cd frontend && npm run dev` in another terminal (http://localhost:5173)
-	cd backend && ../$(BIN)/uvicorn app.main:app --reload --port $(PORT)
+	cd backend && DEMO_MODE=1 ../$(BIN)/uvicorn app.main:app --reload --port $(PORT)
 
 test: ## backend test suite (isolated temp database)
 	$(BIN)/python -m pytest -q

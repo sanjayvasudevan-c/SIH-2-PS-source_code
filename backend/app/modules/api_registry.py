@@ -50,7 +50,7 @@ def _inst_view(i: Institution) -> dict:
 def client_config():
     """Public runtime flags for the frontend."""
     return {"live_events": settings.live_events, "academic_year": settings.current_year,
-            "apaar_registry": "SIMULATED"}
+            "apaar_registry": "SIMULATED", "demo_mode": settings.demo_mode}
 
 
 @router.get("/institutions")

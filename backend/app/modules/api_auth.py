@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import secrets
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Request
@@ -17,12 +18,24 @@ from ..security import (
     actor_from_user,
     client_ip,
     current_actor,
+    hash_password,
     issue_token,
     limiter,
     verify_password,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["auth"])
+
+
+_dummy_hash: str | None = None
+
+
+def _equalise_timing(password: str) -> None:
+    """Run one password hash for unknown or inactive accounts, so response time does not reveal which emails exist."""
+    global _dummy_hash
+    if _dummy_hash is None:
+        _dummy_hash = hash_password(secrets.token_hex(16))
+    verify_password(password, _dummy_hash)
 
 
 class LoginIn(BaseModel):
@@ -57,6 +70,8 @@ def login(body: LoginIn, request: Request, db: Session = Depends(get_db)):
     if user is not None and user.locked_until and user.locked_until > now:
         audit.record_now(actor_from_user(user), "auth.login", "user", user.id, "DENIED", {"reason": "locked"})
         raise ApiError(423, "This account is locked after repeated failed sign-ins. Try again in 15 minutes.")
+    if user is None or not user.active:
+        _equalise_timing(body.password)
     if user is None or not user.active or not verify_password(body.password, user.password_hash):
         if user is not None:
             user.failed_logins += 1
@@ -89,6 +104,8 @@ def stream_token(actor: Actor = Depends(current_actor)):
 
 @router.get("/auth/demo-accounts")
 def demo_accounts(db: Session = Depends(get_db)):
-    """Synthetic demo accounts for the login picker (all use password Demo@2026)."""
+    """Synthetic demo accounts for the login picker (all use password Demo@2026). Only when DEMO_MODE=1."""
+    if not settings.demo_mode:
+        raise ApiError(404, "Not found.")
     users = db.execute(select(User).where(User.email.like("%@demo.local")).order_by(User.role, User.email)).scalars()
     return [{"email": u.email, "full_name": u.full_name, "role": u.role} for u in users]
