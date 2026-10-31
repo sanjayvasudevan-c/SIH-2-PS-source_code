@@ -1,8 +1,13 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { ApiError } from "../api";
+import { api, ApiError } from "../api";
 
 export function Loading({ what = "Loading" }: { what?: string }) {
-  return <p className="muted" role="status">{what}…</p>;
+  return (
+    <div className="skel" role="status" aria-live="polite">
+      <span className="sr-only">{what}…</span>
+      <span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" />
+    </div>
+  );
 }
 
 export function ErrorBox({ error, onRetry }: { error: ApiError | Error | null; onRetry?: () => void }) {
@@ -17,13 +22,33 @@ export function ErrorBox({ error, onRetry }: { error: ApiError | Error | null; o
   );
 }
 
-export function Empty({ children }: { children: ReactNode }) {
-  return <div className="banner info">{children}</div>;
+export function Empty({ children, title }: { children?: ReactNode; title?: string }) {
+  return <div className="empty" role="status">{title && <strong>{title}</strong>}{children}</div>;
+}
+
+// Rule titles come from the rule catalogue (GET /api/v1/rules), fetched once per page load and shared.
+let ruleTitles: Promise<Record<string, string>> | null = null;
+function loadRuleTitles(): Promise<Record<string, string>> {
+  if (!ruleTitles) {
+    ruleTitles = api<{ rule_id: string; title: string }[]>("/api/v1/rules")
+      .then((rs) => Object.fromEntries(rs.map((r) => [r.rule_id, r.title])))
+      .catch(() => { ruleTitles = null; return {}; });
+  }
+  return ruleTitles;
+}
+
+/** Human-readable rule name with its stable code underneath (falls back to the code alone). */
+export function RuleName({ id, codeOnly }: { id: string; codeOnly?: boolean }) {
+  const [titles, setTitles] = useState<Record<string, string>>({});
+  useEffect(() => { let live = true; loadRuleTitles().then((t) => live && setTitles(t)); return () => { live = false; }; }, []);
+  const title = titles[id];
+  if (!title || codeOnly) return <code>{id}</code>;
+  return <span className="rulename">{title}<code>{id}</code></span>;
 }
 
 const TONE: Record<string, string> = {
   VALID: "green", ACTIVE: "green", VERIFIED: "green", COMMITTED: "green", RESOLVED: "green", APPROVED: "green", ACCEPTED: "green", LOW: "green", pass: "green", LIVE: "green",
-  WARNING: "amber", REVIEW: "amber", PENDING_EXEMPT: "amber", PROVISIONAL: "amber", MEDIUM: "amber", CLARIFICATION_REQUESTED: "amber", RESPONDED: "blue", PENDING_CONSENT: "amber", PARTIALLY_COMMITTED: "amber", SIMULATED: "amber", UNVERIFIED: "amber", MISMATCH: "amber",
+  WARNING: "amber", REVIEW: "amber", PENDING_EXEMPT: "amber", PROVISIONAL: "amber", MEDIUM: "amber", CLARIFICATION_REQUESTED: "amber", RESPONDED: "blue", PENDING_CONSENT: "amber", PARTIALLY_COMMITTED: "amber", SIMULATED: "sim", UNVERIFIED: "amber", MISMATCH: "amber",
   ERROR: "red", HIGH: "red", REVOKED: "red", NOT_FOUND: "red", DENIED: "red", fail: "red", CANCELLED: "grey", REJECTED: "grey",
   OPEN: "blue", PREVIEW: "blue", COMMITTING: "blue", NO_MATCH: "amber",
 };

@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api, ApiError, download, fmtDateTime, useApi, useLiveEvents } from "../api";
 import { useAuth } from "../App";
 import SeatStrip from "../components/SeatStrip";
-import { Badge, ErrorBox, Field, Loading, Pager, useToast } from "../components/ui";
+import { Badge, ErrorBox, Field, Loading, Pager, RuleName, useToast } from "../components/ui";
 
 const ACTION_LABEL: Record<string, string> = {
   REQUEST_CLARIFICATION: "Request clarification", RESPOND: "Send response", RESOLVE: "Resolve flag", DISMISS: "Dismiss flag", REOPEN: "Reopen flag",
@@ -41,9 +41,9 @@ export function IssueList() {
         <section className="card flat"><div className="tablewrap scrollbox"><table>
           <thead><tr><th>Rule</th><th>What was found</th><th>Institution</th><th>Year</th><th>Status</th><th>Opened</th></tr></thead>
           <tbody>
-            {r.data.items.length === 0 && <tr><td colSpan={6} className="muted">No flags here.</td></tr>}
+            {r.data.items.length === 0 && <tr><td colSpan={6}><div className="empty"><strong>No flags match these filters</strong>Change the status or rule filter to see others.</div></td></tr>}
             {r.data.items.map((i: any) => (
-              <tr key={i.id}><td><Link to={`/issues/${i.id}`}><code>{i.rule_id}</code></Link><div><Badge v={i.severity} /></div></td>
+              <tr key={i.id}><td><Link to={`/issues/${i.id}`}><RuleName id={i.rule_id} /></Link><div style={{ marginTop: 4 }}><Badge v={i.severity} /></div></td>
                 <td>{i.message}</td><td className="small">{i.institution_name || "—"}</td><td>{i.academic_year}</td>
                 <td><Badge v={i.status} /></td><td className="small">{fmtDateTime(i.created_at)}</td></tr>
             ))}
@@ -104,7 +104,7 @@ export function IssueDetail() {
   return (
     <div className="stack">
       <div className="pagehead"><div><p className="small"><Link to="/issues">← All flags</Link></p>
-        <h1><code style={{ fontSize: 20 }}>{i.rule_id}</code> <Badge v={i.status} /></h1>
+        <h1><RuleName id={i.rule_id} /> <Badge v={i.status} /></h1>
         <p className="muted">{i.institution_name} · {i.academic_year} · opened {fmtDateTime(i.created_at)}</p></div></div>
       {toast}
       <section className="card"><p style={{ fontSize: 16 }}>{i.message}</p><p className="small muted">How to fix: {i.remediation}</p>
@@ -114,7 +114,7 @@ export function IssueDetail() {
         <section className="card">
           <h2>Take action</h2>
           <ErrorBox error={err} />
-          <Field label="Note (required, kept in the history)"><textarea value={note} onChange={(e) => setNote(e.target.value)} /></Field>
+          <Field label="Note (required, kept in the history)" hint={note.trim() ? undefined : "Write a note to enable the actions below."}><textarea value={note} onChange={(e) => setNote(e.target.value)} /></Field>
           <div className="row">{i.allowed_actions.map((a: string) => (
             <button key={a} className={a === "DISMISS" ? "secondary" : ""} disabled={busy || !note.trim()} onClick={() => act(a)}>{ACTION_LABEL[a]}</button>
           ))}</div>

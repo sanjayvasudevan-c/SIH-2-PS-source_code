@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api, ApiError, CURRENT_YEAR, fmtDate, fmtDateTime, useApi, useLiveEvents, liveLabel, YEARS } from "../api";
 import { useAuth } from "../App";
 import SeatStrip, { SeatLegend } from "../components/SeatStrip";
-import { Badge, Confirm, Empty, ErrorBox, Figure, Loading, useToast } from "../components/ui";
+import { Badge, Confirm, Empty, ErrorBox, Figure, Loading, RuleName, useToast } from "../components/ui";
 
 export default function InstDashboard() {
   const { user } = useAuth();
@@ -97,7 +97,7 @@ export default function InstDashboard() {
           <h2>Open flags</h2>
           {x.open_flags.total === 0 ? <Empty>No open flags.</Empty> : (
             <table><tbody>{Object.entries(x.open_flags.by_rule).map(([r, n]) => (
-              <tr key={r}><td><Link to={`/issues?rule_id=${r}`}><code>{r}</code></Link></td><td className="num">{n as number}</td></tr>
+              <tr key={r}><td><Link to={`/issues?rule_id=${r}`}><RuleName id={r} /></Link></td><td className="num">{n as number}</td></tr>
             ))}</tbody></table>
           )}
           <h3 style={{ marginTop: 14 }}>Student correction requests</h3>

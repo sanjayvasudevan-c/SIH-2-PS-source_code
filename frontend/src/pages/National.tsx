@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CURRENT_YEAR, fmtDate, useApi, useLiveEvents, liveLabel, YEARS } from "../api";
 import SeatStrip, { SeatLegend } from "../components/SeatStrip";
-import { Badge, Empty, ErrorBox, Figure, Loading, Tabs } from "../components/ui";
+import { Badge, Empty, ErrorBox, Figure, Loading, RuleName, Tabs } from "../components/ui";
 
 const NAT_LABEL: Record<string, string> = { INDIAN: "Indian", NRI: "NRI", OCI: "OCI / PIO", FN: "Foreign national" };
 
@@ -79,7 +79,7 @@ export default function National() {
         <section className="card"><h2>Open flags by rule</h2>
           {Object.keys(x.open_flags_by_rule).length === 0 ? <p className="muted">None.</p> : (
             <table><tbody>{Object.entries(x.open_flags_by_rule).map(([r, n]) => (
-              <tr key={r}><td><Link to={`/issues?rule_id=${r}`}><code>{r}</code></Link></td><td className="num">{n as number}</td></tr>))}</tbody></table>)}</section>
+              <tr key={r}><td><Link to={`/issues?rule_id=${r}`}><RuleName id={r} /></Link></td><td className="num">{n as number}</td></tr>))}</tbody></table>)}</section>
       </div>
       </>}
       {tab === "submission" && (
