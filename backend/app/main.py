@@ -26,6 +26,7 @@ from .modules import (
     api_records,
     api_registry,
     api_students,
+    api_system,
     api_verification,
 )
 from .modules.credentials import issuer_key
@@ -56,7 +57,7 @@ app = FastAPI(
 )
 
 for r in (api_auth, api_registry, api_imports, api_records, api_issues, api_dashboard, api_credentials,
-          api_verification, api_integration, api_audit, api_students):
+          api_verification, api_integration, api_audit, api_students, api_system):
     app.include_router(r.router)
 app.include_router(api_credentials.wellknown)
 

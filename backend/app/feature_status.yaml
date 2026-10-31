@@ -1,0 +1,236 @@
+# Feature-status register: the single place that states what is built.
+# Checked by scripts/check_claims.py (CI) and shown at /#/status.
+# PROTOTYPE = implemented and tested here; SIMULATED = stands in for an external system;
+# NOT_BUILT = designed, not implemented; EXTERNAL = needs a government agreement or procurement.
+
+- id: validation-engine
+  title: Single validation engine for upload, manual entry, corrections and ERP push (25 rules)
+  status: PROTOTYPE
+  routes: ["POST /api/v1/enrolments", "PATCH /api/v1/enrolments/{enrolment_id}", "GET /api/v1/rules", "PATCH /api/v1/rules/{rule_id}"]
+  tests:
+    - backend/tests/test_rules.py::test_catalogue_has_25_rules
+    - backend/tests/test_rules.py::test_repository_rules_skipped_on_gating_errors
+    - backend/tests/test_rules.py::test_disabled_rule_and_severity_change
+    - backend/tests/test_corrections.py::test_manual_entry_requires_acknowledgement_for_review
+
+- id: bulk-import
+  title: Bulk upload (CSV/XLSX) with preview, row correction, bulk fix, exclusion and retry-safe commit
+  status: PROTOTYPE
+  routes: ["POST /api/v1/imports", "GET /api/v1/imports/{job_id}", "PATCH /api/v1/imports/{job_id}/rows/{row_no}",
+           "POST /api/v1/imports/{job_id}/bulk-fix", "POST /api/v1/imports/{job_id}/commit", "GET /api/v1/imports/template.xlsx"]
+  tests:
+    - backend/tests/test_imports.py::test_demo_a_full_flow
+    - backend/tests/test_imports.py::test_partial_commit_then_retry
+    - backend/tests/test_imports.py::test_concurrent_commit_conflict
+    - backend/tests/test_imports.py::test_bulk_fix
+    - backend/tests/test_imports.py::test_upload_rejections
+
+- id: seat-ledger
+  title: Seat ledger computed from records (intake, NRI, supernumerary caps) with C001/C002 flags
+  status: PROTOTYPE
+  routes: ["POST /api/v1/intakes", "PATCH /api/v1/intakes/{intake_id}/quotas/{category}"]
+  tests:
+    - backend/tests/test_ledger.py::test_intake_plus_one_is_excess
+    - backend/tests/test_ledger.py::test_unused_supernumerary_not_transferable
+    - backend/tests/test_ledger.py::test_default_caps_rounding
+    - backend/tests/test_ledger.py::test_withdrawn_not_counted_db
+
+- id: seat-check
+  title: Seat check before admission (users and ERP keys)
+  status: PROTOTYPE
+  routes: ["POST /api/v1/seat-check"]
+  tests:
+    - backend/tests/test_ledger.py::test_seat_check_pure_boundaries
+    - backend/tests/test_ledger.py::test_seat_check_api
+
+- id: cross-institution-duplicates
+  title: Active enrolment at another institution (D003) with the other institution's identity withheld
+  status: PROTOTYPE
+  routes: ["GET /api/v1/issues/{issue_id}"]
+  tests:
+    - backend/tests/test_rules.py::test_d003_and_d004
+    - backend/tests/test_demo_b.py::test_demo_b
+
+- id: identity-resolution
+  title: Indian-name-aware identity matching (D005) with reasons; never auto-merged
+  status: PROTOTYPE
+  routes: ["GET /api/v1/identity/candidates", "POST /api/v1/identity/candidates/{cand_id}/decision"]
+  tests:
+    - backend/tests/test_identity.py::test_vignesh_spelling_variant_scores_review
+    - backend/tests/test_identity.py::test_d005_flag_with_weights_and_different_dob_no_candidate
+    - backend/tests/test_identity.py::test_seeded_candidates
+
+- id: apaar-registry-check
+  title: APAAR ID check against a synthetic registry, with did-you-mean
+  status: SIMULATED
+  routes: []
+  tests:
+    - backend/tests/test_rules.py::test_r006_not_found_and_did_you_mean
+    - backend/tests/test_rules.py::test_r007_mismatch
+    - backend/tests/test_rules.py::test_r008_adapter_unavailable_is_warning
+  note: No official APAAR verification API was available; every result is labelled SIMULATED.
+
+- id: flag-review
+  title: Flag review workflow (clarification, response, resolve, dismiss, reopen) with history
+  status: PROTOTYPE
+  routes: ["GET /api/v1/issues", "POST /api/v1/issues/{issue_id}/actions", "GET /api/v1/issues/export.csv"]
+  tests:
+    - backend/tests/test_demo_b.py::test_demo_b
+
+- id: record-corrections
+  title: Record corrections with optimistic locking, revision history and status transitions
+  status: PROTOTYPE
+  routes: ["GET /api/v1/enrolments/{enrolment_id}", "POST /api/v1/enrolments/{enrolment_id}/status"]
+  tests:
+    - backend/tests/test_corrections.py::test_optimistic_lock_and_revision
+    - backend/tests/test_corrections.py::test_status_transitions
+    - backend/tests/test_corrections.py::test_pending_apaar_student_later_gets_id_same_record
+
+- id: signed-records
+  title: Signed enrolment records (SD-JWT style, Ed25519) with selective disclosure, revocation, QR, certificate
+  status: PROTOTYPE
+  routes: ["POST /api/v1/enrolments/{enrolment_id}/credentials", "POST /api/v1/credentials/{cred_id}/revoke",
+           "GET /api/v1/credentials/{cred_id}/qr.svg", "GET /.well-known/issuer-keys"]
+  tests:
+    - backend/tests/test_credentials.py::test_issue_permissions
+    - backend/tests/test_credentials.py::test_valid_selective_disclosure
+    - backend/tests/test_credentials.py::test_superseded_and_revoked
+    - backend/tests/test_credentials.py::test_certificate_and_qr
+
+- id: public-verification
+  title: Public token verification with six checks and a tamper demonstration
+  status: PROTOTYPE
+  routes: ["POST /api/v1/verification/verify-token", "POST /api/v1/verification/tamper-demo"]
+  tests:
+    - backend/tests/test_credentials.py::test_tampered_payload_and_disclosure
+    - backend/tests/test_credentials.py::test_unknown_key_and_garbage
+    - backend/tests/test_credentials.py::test_expired
+
+- id: consent-verification
+  title: Consent-based verification requests (same response whether or not the student exists)
+  status: PROTOTYPE
+  routes: ["POST /api/v1/verification/requests", "POST /api/v1/verification/requests/{req_id}/consent"]
+  tests:
+    - backend/tests/test_credentials.py::test_consent_flow
+
+- id: student-self-service
+  title: Student view of own record, field-level sharing and correction requests
+  status: PROTOTYPE
+  routes: ["GET /api/v1/me/record", "POST /api/v1/me/credentials/{cred_id}/present", "POST /api/v1/me/correction-requests"]
+  tests:
+    - backend/tests/test_credentials.py::test_correction_request_reaches_institution_queue
+
+- id: dashboards
+  title: National and institution dashboards computed from the database
+  status: PROTOTYPE
+  routes: ["GET /api/v1/dashboard/national", "GET /api/v1/dashboard/institution"]
+  tests:
+    - backend/tests/test_platform.py::test_national_totals_equal_sql
+
+- id: review-priority
+  title: Transparent review-priority ranking with reasons (not evidence of wrongdoing)
+  status: PROTOTYPE
+  routes: ["GET /api/v1/dashboard/review-priority", "GET /api/v1/reports/review-priority.csv"]
+  tests:
+    - backend/tests/test_platform.py::test_review_priority
+
+- id: csv-reports
+  title: CSV reports with formula-injection protection
+  status: PROTOTYPE
+  routes: ["GET /api/v1/reports/intake-utilisation.csv", "GET /api/v1/reports/nationality.csv"]
+  tests:
+    - backend/tests/test_platform.py::test_csv_formula_injection_neutralised
+
+- id: erp-integration
+  title: ERP API keys with scopes and idempotent enrolment push
+  status: PROTOTYPE
+  routes: ["POST /api/v1/integration/enrolments", "POST /api/v1/integration/clients", "POST /api/v1/integration/clients/{client_id}/revoke"]
+  tests:
+    - backend/tests/test_platform.py::test_integration_push
+    - backend/tests/test_platform.py::test_missing_scope_403
+    - backend/tests/test_platform.py::test_api_key_lifecycle
+
+- id: audit-chain
+  title: Hash-chained audit log with chain verification and CSV export
+  status: PROTOTYPE
+  routes: ["GET /api/v1/audit", "GET /api/v1/audit/verify-chain", "GET /api/v1/audit/export.csv"]
+  tests:
+    - backend/tests/test_platform.py::test_audit_chain_valid_then_tamper_detected
+    - backend/tests/test_security.py::test_every_403_audited_and_no_raw_apaar_in_audit
+  note: Events are appended after the business transaction commits; a crash in between can lose one (see audit doc 07 S7).
+
+- id: live-events
+  title: Live updates over Server-Sent Events (off on serverless; 30 s polling instead)
+  status: PROTOTYPE
+  routes: ["GET /api/v1/events", "POST /api/v1/auth/stream-token"]
+  tests:
+    - backend/tests/test_platform.py::test_event_scoping
+    - backend/tests/test_platform.py::test_sse_requires_stream_token
+
+- id: access-control
+  title: Role-based access, institution scoping, APAAR masking, lockout and rate limits
+  status: PROTOTYPE
+  routes: ["POST /api/v1/auth/login", "GET /api/v1/auth/me"]
+  tests:
+    - backend/tests/test_security.py::test_cross_institution_detail_is_404
+    - backend/tests/test_security.py::test_analyst_sees_masked_apaar_and_no_sensitive_fields
+    - backend/tests/test_security.py::test_login_lockout_after_five_failures
+    - backend/tests/test_security.py::test_security_headers
+
+- id: claims-register
+  title: This feature-status register, checked against routes and tests
+  status: PROTOTYPE
+  routes: ["GET /api/v1/system/status"]
+  tests:
+    - backend/tests/test_claims.py::test_real_register_is_consistent
+    - backend/tests/test_claims.py::test_status_endpoint_public
+
+# ---------------------------------------------------------------- not built (planned)
+
+- id: migrations
+  title: Database migrations (Alembic)
+  status: NOT_BUILT
+  note: Schema comes from create_all; demo databases are reseeded.
+- id: atomic-audit
+  title: Audit written in the business transaction, with signed checkpoints
+  status: NOT_BUILT
+- id: background-jobs
+  title: Background jobs, transactional outbox and webhooks
+  status: NOT_BUILT
+- id: share-codes
+  title: Short revocable share codes, key registry and status lists
+  status: NOT_BUILT
+- id: rule-sets
+  title: Versioned rule sets with impact preview and approval
+  status: NOT_BUILT
+- id: batch-identity
+  title: Batch identity matching with a labelled golden set
+  status: NOT_BUILT
+- id: transfers
+  title: Inter-institution transfer workflow
+  status: NOT_BUILT
+- id: reconciliation
+  title: Reconciliation against declared totals; completeness tracker; forecasting
+  status: NOT_BUILT
+- id: session-hardening
+  title: Refresh-cookie sessions with revocation, MFA, row-level security
+  status: NOT_BUILT
+
+# ---------------------------------------------------------------- external
+
+- id: apaar-live
+  title: Live APAAR / ABC registry verification
+  status: EXTERNAL
+  note: Requires MoE/ABC API access and agreement; no public API confirmed.
+- id: digilocker
+  title: DigiLocker push of enrolment certificates
+  status: EXTERNAL
+- id: aishe-export
+  title: AISHE export in the official format
+  status: EXTERNAL
+- id: approval-portal-feed
+  title: AICTE approval-portal intake feed
+  status: EXTERNAL
+- id: india-hosting
+  title: India-region production hosting, VAPT and monitoring
+  status: EXTERNAL

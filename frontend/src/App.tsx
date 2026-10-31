@@ -19,6 +19,7 @@ import Rules from "./pages/Rules";
 import Integrations from "./pages/Integrations";
 import Audit from "./pages/Audit";
 import Verify from "./pages/Verify";
+import SystemStatus from "./pages/SystemStatus";
 import VerifierRequests from "./pages/VerifierRequests";
 import MyRecord from "./pages/MyRecord";
 import AddStudent from "./pages/AddStudent";
@@ -178,6 +179,7 @@ function Shell({ children }: { children: ReactNode }) {
             <ul>
               <li><Link to="/verify">Verify a student record</Link></li>
               {user ? <li><Link to={homeFor(user.role)}>My home page</Link></li> : <li><Link to="/login">Sign in</Link></li>}
+              <li><Link to="/status">System status</Link></li>
               <li><a href="/api/docs">API documentation</a></li>
             </ul>
           </div>
@@ -215,6 +217,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Login />} />
         <Route path="/verify" element={<Verify />} />
+        <Route path="/status" element={<SystemStatus />} />
         <Route path="/inst" element={<Guard roles={INST}><InstDashboard /></Guard>} />
         <Route path="/inst/upload" element={<Guard roles={INST}><Upload /></Guard>} />
         <Route path="/inst/add" element={<Guard roles={INST}><AddStudent /></Guard>} />
