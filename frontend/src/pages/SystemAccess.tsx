@@ -49,7 +49,7 @@ export default function SystemAccess() {
       <form className="card" onSubmit={create}>
         <h2>Create a key</h2>
         <div className="inline">
-          <div className="field" style={{ flex: "1 1 260px" }}><label>System name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Admission ERP" required minLength={3} /></div>
+          <div className="field" style={{ flex: "1 1 260px" }}><label htmlFor="sa-name">System name</label><input id="sa-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Admission ERP" required minLength={3} /></div>
           {Object.keys(scopes).map((s) => (
             <label key={s} style={{ fontWeight: 400, display: "flex", gap: 6, alignItems: "center", marginBottom: 8 }}>
               <input type="checkbox" style={{ width: "auto" }} checked={scopes[s]} onChange={(e) => setScopes({ ...scopes, [s]: e.target.checked })} />{s}

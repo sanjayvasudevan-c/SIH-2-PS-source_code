@@ -44,8 +44,8 @@ export default function Corrections() {
           {c.resolution_note && <p className="small">Note: {c.resolution_note}</p>}
           {c.status === "OPEN" && (
             <div className="inline">
-              <div className="field" style={{ flex: "1 1 260px" }}><label>Note to the student</label>
-                <input value={notes[c.id] || ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} /></div>
+              <div className="field" style={{ flex: "1 1 260px" }}><label htmlFor={`cr-note-${c.id}`}>Note to the student</label>
+                <input id={`cr-note-${c.id}`} value={notes[c.id] || ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} /></div>
               <button onClick={() => act(c, "ACCEPT")}>Accept and open correction form</button>
               <button className="secondary" onClick={() => act(c, "REJECT")} disabled={(notes[c.id] || "").trim().length < 5}>Reject with note</button>
             </div>

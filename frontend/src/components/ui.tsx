@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { cloneElement, isValidElement, ReactElement, ReactNode, useEffect, useId, useRef, useState } from "react";
 import { api, ApiError } from "../api";
 
 export function Loading({ what = "Loading" }: { what?: string }) {
@@ -131,12 +131,20 @@ export function Findings({ items, onUseSuggestion }: { items: Finding[]; onUseSu
 }
 
 export function Field({ label, children, hint, error, flagged }: { label: string; children: ReactNode; hint?: string; error?: string; flagged?: boolean }) {
+  // Tie the visible label, hint and error to the control so screen readers announce them (WCAG 1.3.1, 3.3.1).
+  const auto = useId();
+  const single = isValidElement(children) ? (children as ReactElement<Record<string, unknown>>) : null;
+  const id = (single?.props.id as string | undefined) || auto;
+  const describedBy = [hint && `${id}-hint`, error && `${id}-err`].filter(Boolean).join(" ") || undefined;
+  const control = single
+    ? cloneElement(single, { id, "aria-describedby": describedBy, "aria-invalid": error || flagged ? true : undefined })
+    : children;
   return (
     <div className={`field${flagged ? " flag" : ""}`}>
-      <label>{label}</label>
-      {children}
-      {hint && <div className="hint">{hint}</div>}
-      {error && <div className="err">{error}</div>}
+      <label htmlFor={single ? id : undefined}>{label}</label>
+      {control}
+      {hint && <div className="hint" id={`${id}-hint`}>{hint}</div>}
+      {error && <div className="err" id={`${id}-err`}>{error}</div>}
     </div>
   );
 }

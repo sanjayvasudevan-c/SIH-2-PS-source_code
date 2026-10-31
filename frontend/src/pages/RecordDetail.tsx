@@ -155,7 +155,7 @@ export default function RecordDetail() {
           <h2>Change enrolment status</h2>
           <div className="inline">
             <Field label="New status"><select value={status} onChange={(ev) => setStatus(ev.target.value)}>{allowed_transitions.map((t: string) => <option key={t}>{t}</option>)}</select></Field>
-            <div className="field" style={{ flex: "1 1 280px" }}><label>Reason</label><input value={reason} onChange={(ev) => setReason(ev.target.value)} /></div>
+            <div className="field" style={{ flex: "1 1 280px" }}><label htmlFor="rd-reason">Reason</label><input id="rd-reason" value={reason} onChange={(ev) => setReason(ev.target.value)} /></div>
             <button disabled={busy || reason.trim().length < 5} onClick={() => act(() => api(`/api/v1/enrolments/${id}/status`, { body: { status, reason, version: e.version } }), `Status changed to ${status}. Seat counts updated.`)}>
               Mark as {status.replace("_", " ").toLowerCase()}</button>
             <button className="secondary" onClick={() => setMode("")}>Cancel</button>

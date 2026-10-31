@@ -83,8 +83,8 @@ export default function IntakeAdmin() {
         <section className="card">
           <h2>Set {cap.cat} cap</h2>
           <div className="inline">
-            <div className="field"><label>Cap (seats)</label><input type="number" min={0} value={cap.seats} onChange={(e) => setCap({ ...cap, seats: e.target.value })} style={{ width: 120 }} /></div>
-            <div className="field" style={{ flex: "1 1 320px" }}><label>Rule source (recorded with the cap)</label><input value={cap.source} onChange={(e) => setCap({ ...cap, source: e.target.value })} placeholder="e.g. AICTE approval letter ref …" /></div>
+            <div className="field"><label htmlFor="ia-cap">Cap (seats)</label><input id="ia-cap" type="number" min={0} value={cap.seats} onChange={(e) => setCap({ ...cap, seats: e.target.value })} style={{ width: 120 }} /></div>
+            <div className="field" style={{ flex: "1 1 320px" }}><label htmlFor="ia-source">Rule source (recorded with the cap)</label><input id="ia-source" value={cap.source} onChange={(e) => setCap({ ...cap, source: e.target.value })} placeholder="e.g. AICTE approval letter ref …" /></div>
             <button disabled={cap.source.trim().length < 5} onClick={saveCap}>Save cap</button>
             <button className="secondary" onClick={() => setCap(null)}>Cancel</button>
           </div>

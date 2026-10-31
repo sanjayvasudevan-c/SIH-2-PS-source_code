@@ -96,7 +96,7 @@ export default function MyRecord() {
             <button style={{ marginTop: 10 }} onClick={share} disabled={!Object.values(chosen).some(Boolean)}>Create share token</button>
             {shared && (
               <div className="grid g2" style={{ marginTop: 12 }}>
-                <div><label>Token (send this to the verifier)</label><div className="token">{shared.token}</div>
+                <div><p className="small" style={{ fontWeight: 700, marginBottom: 4 }}>Token (send this to the verifier)</p><div className="token">{shared.token}</div>
                   <button className="secondary small" style={{ marginTop: 6 }} onClick={() => navigator.clipboard?.writeText(shared.token).then(() => show("Token copied."))}>Copy token</button></div>
                 {shared.qr_svg ? <div className="qr" aria-label="QR code that opens the verification page" dangerouslySetInnerHTML={{ __html: shared.qr_svg }} /> : <p className="small muted">The token is too long for one QR code; share the token text instead.</p>}
               </div>

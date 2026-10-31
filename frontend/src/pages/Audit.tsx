@@ -28,10 +28,10 @@ export default function Audit() {
         ? <div className="banner ok">Chain intact: {chain.events_checked} events verified. Head hash <code>{chain.head_hash?.slice(0, 16)}…</code></div>
         : <div className="banner error">Chain broken at event #{chain.first_broken_seq}. {chain.events_checked} events before it verified. That event or an earlier one was altered or removed.</div>)}
       <section className="card inline">
-        <div className="field"><label>Action starts with</label><input value={f.action} onChange={(e) => set("action", e.target.value)} placeholder="e.g. import." /></div>
-        <div className="field"><label>Outcome</label><select value={f.outcome} onChange={(e) => set("outcome", e.target.value)}>
+        <div className="field"><label htmlFor="au-action">Action starts with</label><input id="au-action" value={f.action} onChange={(e) => set("action", e.target.value)} placeholder="e.g. import." /></div>
+        <div className="field"><label htmlFor="au-outcome">Outcome</label><select id="au-outcome" value={f.outcome} onChange={(e) => set("outcome", e.target.value)}>
           <option value="">Any</option><option>SUCCESS</option><option>DENIED</option><option>FAILED</option></select></div>
-        <div className="field"><label>Actor role</label><select value={f.actor_role} onChange={(e) => set("actor_role", e.target.value)}>
+        <div className="field"><label htmlFor="au-role">Actor role</label><select id="au-role" value={f.actor_role} onChange={(e) => set("actor_role", e.target.value)}>
           <option value="">Any</option>{["AICTE_ADMIN", "AICTE_ANALYST", "INST_ADMIN", "INST_STAFF", "VERIFIER", "STUDENT", "AUDITOR", "INTEGRATION_CLIENT", "ANONYMOUS"].map((x) => <option key={x}>{x}</option>)}</select></div>
       </section>
       {r.loading && !r.data && <Loading />}

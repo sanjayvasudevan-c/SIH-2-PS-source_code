@@ -28,12 +28,12 @@ export function IssueList() {
       </div>
       <ErrorBox error={err} />
       <section className="card inline">
-        <div className="field"><label>Status</label>
-          <select value={status} onChange={(e) => set("status", e.target.value)}>
+        <div className="field"><label htmlFor="if-status">Status</label>
+          <select id="if-status" value={status} onChange={(e) => set("status", e.target.value)}>
             <option value="OPEN,CLARIFICATION_REQUESTED,RESPONDED">Needs attention</option><option value="OPEN">Open</option>
             <option value="CLARIFICATION_REQUESTED">Clarification requested</option><option value="RESPONDED">Responded</option>
             <option value="RESOLVED,DISMISSED">Closed</option><option value="">All</option></select></div>
-        <div className="field"><label>Rule</label><input value={rule} onChange={(e) => set("rule_id", e.target.value)} placeholder="e.g. C001_EXCESS_INTAKE" /></div>
+        <div className="field"><label htmlFor="if-rule">Rule</label><input id="if-rule" value={rule} onChange={(e) => set("rule_id", e.target.value)} placeholder="e.g. C001_EXCESS_INTAKE" /></div>
       </section>
       <ErrorBox error={r.error} onRetry={() => r.reload()} />
       {r.loading && !r.data && <Loading />}
@@ -104,8 +104,8 @@ export function IssueDetail() {
   return (
     <div className="stack">
       <div className="pagehead"><div><p className="small"><Link to="/issues">← All flags</Link></p>
-        <h1><RuleName id={i.rule_id} /> <Badge v={i.status} /></h1>
-        <p className="muted">{i.institution_name} · {i.academic_year} · opened {fmtDateTime(i.created_at)}</p></div></div>
+        <h1><RuleName id={i.rule_id} /></h1>
+        <p className="muted"><Badge v={i.status} /> {i.institution_name} · {i.academic_year} · opened {fmtDateTime(i.created_at)}</p></div></div>
       {toast}
       <section className="card"><p style={{ fontSize: 16 }}>{i.message}</p><p className="small muted">How to fix: {i.remediation}</p>
         {i.resolution_note && <p className="banner ok small">Closing note: {i.resolution_note}</p>}</section>

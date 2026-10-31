@@ -53,7 +53,7 @@ export default function Identity() {
           {c.decision_note && <p className="small muted">Decision note: {c.decision_note}</p>}
           {!c.decision && user?.role === "AICTE_ADMIN" && (
             <div className="inline" style={{ marginTop: 10 }}>
-              <div className="field" style={{ flex: "1 1 260px" }}><label>Reviewer note</label><input value={notes[c.id] || ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} /></div>
+              <div className="field" style={{ flex: "1 1 260px" }}><label htmlFor={`id-note-${c.id}`}>Reviewer note</label><input id={`id-note-${c.id}`} value={notes[c.id] || ""} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} /></div>
               <button disabled={(notes[c.id] || "").trim().length < 3} onClick={() => decide(c.id, "SAME_PERSON")}>Same person</button>
               <button className="secondary" disabled={(notes[c.id] || "").trim().length < 3} onClick={() => decide(c.id, "DIFFERENT_PEOPLE")}>Different people</button>
             </div>

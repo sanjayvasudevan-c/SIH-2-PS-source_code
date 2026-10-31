@@ -37,20 +37,20 @@ export default function Records() {
           <div className="field" style={{ flex: "2 1 240px" }}><label htmlFor="q">Search</label>
             <input id="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Name, roll number or full APAAR ID" /></div>
           {insts.data && (
-            <div className="field"><label>Institution</label>
-              <select value={sp.get("institution_id") || ""} onChange={(e) => set("institution_id", e.target.value)}>
+            <div className="field"><label htmlFor="rf-inst">Institution</label>
+              <select id="rf-inst" value={sp.get("institution_id") || ""} onChange={(e) => set("institution_id", e.target.value)}>
                 <option value="">All institutions</option>{insts.data.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
           )}
-          <div className="field"><label>Year</label>
-            <select value={sp.get("academic_year") || ""} onChange={(e) => set("academic_year", e.target.value)}>
+          <div className="field"><label htmlFor="rf-year">Year</label>
+            <select id="rf-year" value={sp.get("academic_year") || ""} onChange={(e) => set("academic_year", e.target.value)}>
               <option value="">All</option><option>2026-27</option><option>2025-26</option></select></div>
-          <div className="field"><label>Programme code</label>
-            <input value={sp.get("programme_code") || ""} onChange={(e) => set("programme_code", e.target.value)} style={{ width: 130 }} /></div>
-          <div className="field"><label>Status</label>
-            <select value={sp.get("status") || ""} onChange={(e) => set("status", e.target.value)}>
+          <div className="field"><label htmlFor="rf-prog">Programme code</label>
+            <input id="rf-prog" value={sp.get("programme_code") || ""} onChange={(e) => set("programme_code", e.target.value)} style={{ width: 130 }} /></div>
+          <div className="field"><label htmlFor="rf-status">Status</label>
+            <select id="rf-status" value={sp.get("status") || ""} onChange={(e) => set("status", e.target.value)}>
               <option value="">Any</option>{["ACTIVE", "PROVISIONAL", "WITHDRAWN", "TRANSFERRED_OUT", "GRADUATED", "CANCELLED"].map((s) => <option key={s}>{s}</option>)}</select></div>
-          <div className="field"><label>APAAR check</label>
-            <select value={sp.get("apaar_status") || ""} onChange={(e) => set("apaar_status", e.target.value)}>
+          <div className="field"><label htmlFor="rf-apaar">APAAR check</label>
+            <select id="rf-apaar" value={sp.get("apaar_status") || ""} onChange={(e) => set("apaar_status", e.target.value)}>
               <option value="">Any</option>{["VERIFIED", "MISMATCH", "UNVERIFIED", "PENDING_EXEMPT"].map((s) => <option key={s}>{s}</option>)}</select></div>
           <button type="submit">Search records</button>
         </form>
