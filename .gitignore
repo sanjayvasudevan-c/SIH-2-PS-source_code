@@ -13,3 +13,8 @@ frontend/dist/
 *.db-shm
 demo-production/recordings/
 .taste-skill/
+# film production: generated/large media stay local until final delivery
+APAAR-VIDEO/remotion/node_modules/
+APAAR-VIDEO/remotion/out/
+APAAR-VIDEO/remotion/public/clips/
+APAAR-VIDEO/recordings/

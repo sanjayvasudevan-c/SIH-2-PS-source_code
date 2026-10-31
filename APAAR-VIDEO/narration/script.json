@@ -1,0 +1,41 @@
+{
+  "title": "APAAR Student Register: SIH26263 product film",
+  "voice_notes": "Calm, confident presenter. Say APAAR as one word (AH-paar). Say AICTE as letters (A-I-C-T-E). Say SIH26263 as 'S-I-H two six two six three'.",
+  "segments": [
+    {"id": "s1_open", "scene": 1, "start": 2.0, "window": 16.5,
+     "text": "Every year, lakhs of students join AICTE-approved institutions. Behind each admission is a record that should be accurate, verifiable, and fair to every student. This is the APAAR Student Register."},
+
+    {"id": "s2_problem", "scene": 2, "start": 21.0, "window": 28.0,
+     "text": "Today, oversight mostly sees totals. An institution reports how many students it admitted, not who they are. Excess admissions hide inside those numbers. The same student can appear at two colleges at once. And when an employer asks if a degree is real, the answer is a letter and a long wait."},
+
+    {"id": "s3_solution", "scene": 3, "start": 51.0, "window": 18.0,
+     "text": "So we built one register of student-level enrolments, keyed to the APAAR ID. Every record is checked the same way, and every seat is counted from real records, not from a declared total."},
+
+    {"id": "s4a_dashboard", "scene": 4, "start": 71.0, "window": 14.0,
+     "text": "AICTE opens the national register. Every figure here is computed from individual records. Narmada's MBA programme shows sixty-eight students against an approved intake of sixty."},
+
+    {"id": "s4b_upload", "scene": 4, "start": 86.0, "window": 22.0,
+     "text": "Institutions upload their admissions as a spreadsheet. Twenty-six validation rules check every row. A mistyped APAAR ID gets a did-you-mean suggestion from the registry check, which is simulated in this prototype. Staff fix the flagged rows, and a row with an error is never committed."},
+
+    {"id": "s4c_seat", "scene": 4, "start": 109.0, "window": 11.0,
+     "text": "Before admitting a student, the admission desk can run a seat check, and see whether one more admission would cross the approved intake."},
+
+    {"id": "s4d_duplicate", "scene": 4, "start": 121.0, "window": 16.0,
+     "text": "When a student is already active at another institution, the register raises a flag for review. The other institution's identity stays withheld, and name matching that understands Indian spelling variations finds possible duplicates without merging anything automatically."},
+
+    {"id": "s4e_verify", "scene": 4, "start": 138.0, "window": 25.0,
+     "text": "Institutions issue signed enrolment records. A student chooses exactly which details to share. An employer pastes the token and six checks run in order, from the signature to revocation. Change a single value, and verification fails. Consent-based requests work the same way, and only with the student's approval."},
+
+    {"id": "s4f_minor", "scene": 4, "start": 164.0, "window": 10.0,
+     "text": "Students under eighteen are protected. Their records stay on hold until the institution records a guardian's consent."},
+
+    {"id": "s4g_audit", "scene": 4, "start": 175.0, "window": 14.0,
+     "text": "Every action lands in a hash-chained audit trail that an auditor can verify. And a public status page states honestly what is built, what is simulated, and what still needs official access."},
+
+    {"id": "s5_architecture", "scene": 5, "start": 191.0, "window": 28.0,
+     "text": "Under the hood, a React interface talks to a FastAPI service. One validation engine is the only writer of student records. It feeds the seat ledger, identity matching and signed credentials, with every step recorded in the audit chain, on PostgreSQL. The APAAR registry connection is simulated until official access is granted."},
+
+    {"id": "s6_close", "scene": 6, "start": 221.0, "window": 15.0,
+     "text": "APAAR Student Register. Every seat counted, every student verifiable. Built for Smart India Hackathon, problem statement S-I-H two six two six three."}
+  ]
+}
