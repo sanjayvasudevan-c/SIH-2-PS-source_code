@@ -39,7 +39,7 @@ None of these needs new infrastructure. The v3 additions of Redis and Kubernetes
    - In-memory rate limiter.
    - Signing keys in the same DB.
    - JWT in sessionStorage with no revocation.
-   - No CSP or MFA (doc 07).
+   - No HSTS and no MFA. A CSP and other security headers are already set (doc 07 S11).
 4. **Performance:** the preview meets the NFR. A 5k-row commit takes 49 s synchronously on PG, which will exceed serverless limits with network latency. The fix is background jobs.
 5. **Strengths to keep:**
    - The single-writer validation engine.

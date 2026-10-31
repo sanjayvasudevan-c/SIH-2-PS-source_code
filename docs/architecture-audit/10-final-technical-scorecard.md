@@ -9,7 +9,7 @@ Scores are out of 10, for the **code as it exists at `b0072e7`**, not the v3 des
 | 3 | Architecture quality | **6** | Real single-writer engine and a clean module split; but in-memory post-commit hooks, no migrations, boundaries not enforced | 8 |
 | 4 | Code quality | **7** | Lint/tsc clean; readable; some N+1 and untyped bodies (doc 03 §7) | 8 |
 | 5 | Test quality | **7** | 109 tests pass on SQLite **and** PG16; no concurrency, fuzz or cross-tenant tests; no CI | 8.5 |
-| 6 | Security | **4** | Timing oracle, parser bomb, non-atomic audit, secrets in the DB, no CSP, no MFA (doc 07) | 7 |
+| 6 | Security | **4** | Timing oracle, parser bomb, non-atomic audit, secrets in the DB, no MFA, no HSTS; CSP and other headers already present (doc 07) | 7 |
 | 7 | Privacy | **5** | Good minimisation and redaction; no minor handling, retention, consent revocation or access log | 7 |
 | 8 | Performance / scalability | **5** | Preview meets NFR; 5k commit takes 49 s synchronously; per-row queries; no load test | 7 |
 | 9 | Reliability / recoverability | **3** | No jobs, retries, anchors, backups policy or deploy | 6 |

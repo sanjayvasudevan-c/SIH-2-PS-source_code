@@ -35,7 +35,7 @@ Items marked **♻ Codex** have a reviewed starting point on branch `codex/sih26
 | P1-3 | Share codes (F-04) + minor/consent checks in one verification service | Token-in-URL | M | P0-8 |
 | P1-4 | Explanation objects + resolution outcomes + rule metrics (F-02) | FP calibration | M | P0-7 |
 | P1-5 | Central scoping helper + generated cross-tenant tests (S15) | Tenant isolation | M | — |
-| P1-6 | Token hardening: refresh cookie, `token_version`, CSP/headers (S10, S11) | Session security | M | — |
+| P1-6 | Token hardening: refresh cookie, `token_version`, HSTS + stricter CSP (S10, S11) | Session security | M | — |
 | P1-7 | Idempotency record minimisation + TTL purge (S13) | PII retention | S | P1-1 |
 | P1-8 | Signed audit checkpoints (F-16, S8) | Truncation | S | P0-4 |
 | P1-9 | Key registry + JWKS + KMS adapter interface (S9) | Key custody | M | — |
