@@ -1,0 +1,85 @@
+{
+  "voice": {
+    "kokoro_voice": "af_heart",
+    "kokoro_speed": 0.98,
+    "note": "Kokoro renders every line; Chatterbox re-renders each line using the Kokoro voice as reference, with per-line expression. 'exaggeration' controls emotional intensity (0.25 calm, 0.5 neutral, 0.75 lifted); 'cfg' controls pacing (lower = slower, more deliberate)."
+  },
+  "scenes": [
+    {"id": "s00_open", "chapter": null, "lines": [
+      {"text": "Every year, lakhs of students join AICTE-approved institutions.", "exaggeration": 0.45, "cfg": 0.45, "pause": 0.35},
+      {"text": "Which of them were actually admitted, and how many seats did they fill?", "exaggeration": 0.62, "cfg": 0.4, "pause": 0.6}
+    ]},
+    {"id": "s01_problem", "chapter": "01 · The problem", "lines": [
+      {"text": "Today, most institutions report totals.", "exaggeration": 0.35, "cfg": 0.5, "pause": 0.3},
+      {"text": "A total can't show who is enrolled, whether one student is counted twice, or whether a programme went over its approved intake.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.4},
+      {"text": "This register keeps a record for every student, keyed to their APAAR ID.", "exaggeration": 0.6, "cfg": 0.45, "pause": 0.5}
+    ]},
+    {"id": "s02_signin", "chapter": "02 · Sign in", "lines": [
+      {"text": "It opens like a familiar government portal, with text-size controls and a skip link.", "exaggeration": 0.4, "cfg": 0.5, "pause": 0.3},
+      {"text": "Every role has its own account, and all the data you'll see is synthetic.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.4}
+    ]},
+    {"id": "s03_dashboard", "chapter": "02 · Sign in", "lines": [
+      {"text": "An institution sees its seat position, programme by programme.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "Green cells are occupied seats. The dark line is the approved intake.", "exaggeration": 0.4, "cfg": 0.5, "pause": 0.25},
+      {"text": "Supernumerary categories are counted separately, each against its own cap.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.4}
+    ]},
+    {"id": "s04_upload", "chapter": "03 · Submit", "lines": [
+      {"text": "Submitting starts with the institution's usual spreadsheet.", "exaggeration": 0.4, "cfg": 0.5, "pause": 0.25},
+      {"text": "Sixteen rows are checked against twenty-five named rules before anything is saved.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.25},
+      {"text": "Five are valid, two need review, and nine have errors.", "exaggeration": 0.6, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s05_fix", "chapter": "03 · Submit", "lines": [
+      {"text": "Every error says how to fix it.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.2},
+      {"text": "This APAAR ID isn't in the registry. But one near-variant matches the student's name and date of birth, so the system suggests it.", "exaggeration": 0.55, "cfg": 0.45, "pause": 0.25},
+      {"text": "Nothing changes until the user accepts it.", "exaggeration": 0.4, "cfg": 0.5, "pause": 0.25},
+      {"text": "Other rows are fixed in place, and a duplicate row is simply left out.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "Zero errors. Fifteen rows ready to commit.", "exaggeration": 0.7, "cfg": 0.4, "pause": 0.4}
+    ]},
+    {"id": "s06_commit", "chapter": "03 · Submit", "lines": [
+      {"text": "Before committing, the user sees exactly what will happen to each programme's seats.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "The moment they commit, AICTE's national register updates. No reload.", "exaggeration": 0.65, "cfg": 0.4, "pause": 0.4}
+    ]},
+    {"id": "s07_seatcheck", "chapter": "04 · Prevent", "lines": [
+      {"text": "Excess admission is easier to prevent than to find later.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.25},
+      {"text": "Before admitting one more student, Godavari runs a seat check.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.2},
+      {"text": "The answer is clear: this would exceed the approved intake by one.", "exaggeration": 0.65, "cfg": 0.4, "pause": 0.4}
+    ]},
+    {"id": "s08_demob", "chapter": "04 · Prevent", "lines": [
+      {"text": "If the institution uploads anyway, the projection shows four seats over, in red.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.25},
+      {"text": "The records are still accepted. Blocking them would only reward under-reporting.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "Instead, flags open for AICTE: excess intake, a category over its cap, and a student already active elsewhere.", "exaggeration": 0.55, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s09_privacy", "chapter": "05 · Review", "lines": [
+      {"text": "That last flag involves two institutions, and each sees only its own side.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "Godavari sees another AICTE-approved institution, identity withheld. AICTE sees both.", "exaggeration": 0.55, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s10_workflow", "chapter": "05 · Review", "lines": [
+      {"text": "A flag means a person should look. It never says fraud.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.25},
+      {"text": "AICTE asks for clarification, and every step is recorded with a note.", "exaggeration": 0.4, "cfg": 0.5, "pause": 0.25},
+      {"text": "When Godavari cancels four duplicate admissions, the excess flag closes itself, and the system logs exactly why.", "exaggeration": 0.6, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s11_priority", "chapter": "05 · Review", "lines": [
+      {"text": "Review priority tells AICTE where to look first, with a reason for every point.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "And identity matching, tuned for Indian names, finds the same person under different spellings, then explains why.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s12_issue", "chapter": "06 · Verify", "lines": [
+      {"text": "Institutions can issue a signed digital record.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "The student decides what to share: institution, programme and status, but not their APAAR ID.", "exaggeration": 0.55, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s13_verify", "chapter": "06 · Verify", "lines": [
+      {"text": "Anyone can verify it, without an account. All six checks pass.", "exaggeration": 0.55, "cfg": 0.45, "pause": 0.25},
+      {"text": "Change a single value, and the check fails.", "exaggeration": 0.7, "cfg": 0.4, "pause": 0.25},
+      {"text": "And if the institution revokes it, the verifier sees when, and why.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s14_consent", "chapter": "06 · Verify", "lines": [
+      {"text": "An employer can also ask through the register, but only with the student's consent.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.25},
+      {"text": "The student sees exactly which fields will be shared, and allows it.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.25},
+      {"text": "The employer gets those fields, and nothing more.", "exaggeration": 0.6, "cfg": 0.45, "pause": 0.4}
+    ]},
+    {"id": "s15_close", "chapter": null, "lines": [
+      {"text": "Every action is written to a tamper-evident audit chain, and an auditor can verify it in one click.", "exaggeration": 0.5, "cfg": 0.45, "pause": 0.3},
+      {"text": "One register. Every seat accounted for. Every record verifiable.", "exaggeration": 0.7, "cfg": 0.38, "pause": 0.4},
+      {"text": "Built for AICTE, problem statement S I H two six two six three.", "exaggeration": 0.45, "cfg": 0.5, "pause": 0.8}
+    ]}
+  ]
+}

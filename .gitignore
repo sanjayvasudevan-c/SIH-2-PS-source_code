@@ -11,3 +11,4 @@ frontend/dist/
 *.db-journal
 *.db-wal
 *.db-shm
+demo-production/recordings/

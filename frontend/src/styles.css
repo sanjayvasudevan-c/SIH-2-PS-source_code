@@ -231,3 +231,7 @@ html { scroll-behavior: smooth; }
 .tabpanel { margin-top: 2px; }
 @media (max-width: 900px) { .prog-grid { grid-template-columns: 1fr; } }
 @media (max-width: 720px) { .acct-grid { grid-template-columns: 1fr; } .scrollbox { max-height: 70vh; } }
+/* toasts float, so they never shift the layout under the pointer */
+.banner.toast { position: fixed; right: 24px; bottom: 24px; z-index: 60; max-width: min(460px, calc(100vw - 32px)); margin: 0;
+  box-shadow: 0 10px 30px rgba(10, 37, 86, .22); animation: toast-in .25s ease-out; }
+@keyframes toast-in { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }

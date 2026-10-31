@@ -123,7 +123,7 @@ export function useToast(): [ReactNode, (msg: string, tone?: string) => void] {
     const t = setTimeout(() => setMsg(null), 6000);
     return () => clearTimeout(t);
   }, [msg]);
-  const node = msg ? <div className={`banner ${msg.tone}`} role="status">{msg.text}</div> : null;
+  const node = msg ? <div className={`banner toast ${msg.tone}`} role="status">{msg.text}</div> : null;
   return [node, (text, tone = "ok") => setMsg({ text, tone })];
 }
 
