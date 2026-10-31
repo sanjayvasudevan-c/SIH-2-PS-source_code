@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .. import audit
-from ..models import Institution, IssueEvent, Notification, Programme, ValidationIssue
+from ..models import ApprovedIntake, Institution, IssueEvent, Notification, Programme, ValidationIssue
 from ..security import Actor, ApiError
 from . import events, ledger
 from .rules import load_config, remediation_for
@@ -102,6 +102,13 @@ def _strip(pos: dict) -> dict:
 def run_capacity_checks(db: Session, programme_id: str, academic_year: str, actor: Actor | None = None) -> dict:
     """Re-measure a programme-year; open/refresh C001/C002, auto-close them when the condition disappears."""
     db.flush()
+    # Serialise checks per programme-year: a concurrent commit waits here, then counts our committed rows
+    # (PostgreSQL READ COMMITTED), so two admissions for the last seat cannot both miss the excess flag.
+    db.execute(
+        select(ApprovedIntake.id)
+        .where(ApprovedIntake.programme_id == programme_id, ApprovedIntake.academic_year == academic_year)
+        .with_for_update()
+    )
     cfg = load_config(db)
     prog = db.get(Programme, programme_id)
     pos = ledger.position(db, programme_id, academic_year)

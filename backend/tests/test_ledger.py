@@ -137,3 +137,60 @@ def test_status_transitions():
     assert ledger.TRANSITIONS["PROVISIONAL"] == {"ACTIVE", "CANCELLED", "WITHDRAWN"}
     assert ledger.TRANSITIONS["WITHDRAWN"] == {"ACTIVE"}
     assert ledger.TRANSITIONS["GRADUATED"] == set()
+
+
+# ---------------------------------------------------------------- concurrency (PostgreSQL only)
+
+import os  # noqa: E402
+import threading  # noqa: E402
+import time  # noqa: E402
+from datetime import date  # noqa: E402
+
+
+@pytest.mark.skipif(not os.environ.get("TEST_DATABASE_URL", "").startswith("postgresql"),
+                    reason="row locks need PostgreSQL")
+def test_concurrent_commits_cannot_miss_excess_flag(seeded):
+    from app.db import SessionLocal
+    from app.models import ApprovedIntake, Student, ValidationIssue
+    from app.modules import issues
+
+    with SessionLocal() as s:
+        inst = s.execute(select(Institution).where(Institution.short_name == "kaveri")).scalar_one()
+        prog = s.execute(select(Programme).where(Programme.institution_id == inst.id,
+                                                 Programme.code == "BTECH-CSE")).scalar_one()
+        year = "2026-27"
+        intake = s.execute(select(ApprovedIntake).where(ApprovedIntake.programme_id == prog.id,
+                                                        ApprovedIntake.academic_year == year)).scalar_one()
+        intake.approved_intake = ledger.position(s, prog.id, year)["within_intake_enrolled"] + 1
+        s.commit()
+        inst_id, prog_id = inst.id, prog.id
+    key = f"{prog_id}:{year}"
+
+    def admit(session, n):
+        st = Student(full_name=f"Race Student {n}", name_key=f"race student {n}", date_of_birth=date(2008, 1, n),
+                     gender="F", nationality_status="INDIAN")
+        session.add(st)
+        session.flush()
+        session.add(Enrolment(student_id=st.id, institution_id=inst_id, programme_id=prog_id, academic_year=year,
+                              institution_student_id=f"RACE{n}", seat_category="REGULAR",
+                              admission_date=date(2026, 8, 1), status="ACTIVE", source="MANUAL"))
+        issues.run_capacity_checks(session, prog_id, year)
+
+    a, b = SessionLocal(), SessionLocal()
+    try:
+        admit(a, 1)
+        t = threading.Thread(target=lambda: (admit(b, 2), b.commit()))
+        t.start()
+        time.sleep(0.5)
+        a.commit()
+        t.join(timeout=10)
+        assert not t.is_alive()
+    finally:
+        a.close()
+        b.close()
+    with SessionLocal() as s:
+        open_c001 = s.execute(select(ValidationIssue).where(ValidationIssue.rule_id == "C001_EXCESS_INTAKE",
+                                                            ValidationIssue.dedupe_key == key,
+                                                            ValidationIssue.status == "OPEN")).scalars().all()
+        assert len(open_c001) == 1
+        assert open_c001[0].evidence["position"]["excess_over_intake"] == 1
