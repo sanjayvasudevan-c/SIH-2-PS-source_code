@@ -23,14 +23,14 @@ for _p in sorted((HERE / "voice").glob("timing*.json")):
     TIMING.update(json.loads(_p.read_text()))
 
 LEAD, TAIL = 0.5, 1.3
-EXTRA = {"k00_meet": 2.0, "k01_problem": 3.0, "k02_idea": 1.5, "k14_why": 4.0, "k15_close": 6.0}                   # silence before / after each line
+EXTRA = {"k00_meet": 2.0, "k01_problem": 3.0, "k02_idea": 1.5, "k14_why": 2.0, "k15_close": 3.5}                   # silence before / after each line
 MAX_RATE = 2.2                            # footage never plays slower than real time; longer footage is sped up to this
 ZOOM_CLICK, ZOOM_BOX = 1.65, 1.28
 HOST = "apaar-student-register.vercel.app"
 
 # segment → visuals. clip: name, optional (from, to) in seconds or event refs "click:Label"/"box:label"/"beat:label" with offsets.
 V = {
-    "k00_meet": [{"clip": "n_student_correction", "to": "box:ask", "pad": -.2}, {"scene": "S1Open", "w": 1}],
+    "k00_meet": [{"clip": "n_student_correction", "to": "box:details", "pad": 1.4}, {"scene": "S1Open", "w": 1, "offset": 5.0}],
     "k01_problem": [{"scene": "HiddenExcess", "w": 1}, {"scene": "CountedTwice", "w": 1}, {"scene": "LetterAndWait", "w": 1}],
     "k02_idea": [{"scene": "OneRegister", "w": 1}, {"clip": "s03_dashboard"}],
     "k03_upload": [{"clip": "s04_upload"}],
@@ -126,6 +126,31 @@ def camera(meta, a, b, rate):
     return keys, clicks
 
 
+def add_hold(items, p, hold, tt, sid):
+    at = max(p["a"], p["b"] - .08)
+    # an active hold: tour the page's highlighted elements (boxes, then click targets), one every ~2 s
+    pts = []
+    for e in p["meta"]["events"]:
+        if e["t"] > p["b"] + .05 or e["t"] < p["a"] - .5:
+            continue                                  # only what this shot actually showed
+        if e["type"] == "box" and e.get("w"):
+            z = max(1.12, min(1.5, 2300 / max(1, e["w"]), 1250 / max(1, e["h"])))
+            pts.append((e["x"] + e["w"] / 2, e["y"] + e["h"] / 2, z))
+        elif e["type"] == "click" and e.get("x"):
+            pts.append((e["x"], e["y"], 1.45))
+    pts = pts[-4:] or [(1280, 720, 1.15)]
+    keys = [{"t": 0, "zoom": 1.0, "cx": 1280, "cy": 720}]
+    k, i_ = 0.0, 0
+    while k < hold - .3:
+        x, y, z = pts[i_ % len(pts)]
+        keys.append({"t": round(k + .6, 3), "zoom": round(z, 3), "cx": x, "cy": y})
+        keys.append({"t": round(min(hold, k + 2.0), 3), "zoom": round(z * 1.04, 3), "cx": x, "cy": y})
+        k += 2.0; i_ += 1
+    items.append({"kind": "clip", "name": f"{p['name']}.mp4", "start": round(tt, 3), "dur": round(hold, 3), "from": round(at, 3),
+                  "rate": 0.02, "keys": keys, "url": HOST + URL.get(p["name"], "/"), "seg": sid, "still": True})
+    return tt + hold
+
+
 def main():
     PUB_CLIPS.mkdir(parents=True, exist_ok=True); PUB_VOICE.mkdir(parents=True, exist_ok=True)
     t = 0.0
@@ -148,7 +173,7 @@ def main():
         plan = []
         for v in vis:
             if "scene" in v:
-                plan.append({"kind": "scene", "name": v["scene"], "w": v.get("w", 1)})
+                plan.append({"kind": "scene", "name": v["scene"], "w": v.get("w", 1), "offset": v.get("offset", 0)})
                 continue
             d, meta = load_clip(v["clip"])
             ev = meta["events"]
@@ -168,6 +193,7 @@ def main():
         scene_time = dur if clip_src == 0 else min(dur * .45, 4.5 * scene_w)
         clip_time = dur - scene_time if scene_w else dur
         rate = 1.0
+        hold = 0.0
         if clip_src:
             rate = clip_src / clip_time
             if rate > MAX_RATE:          # too much footage: trim each clip's tail proportionally
@@ -183,7 +209,7 @@ def main():
         for p in plan:
             if p["kind"] == "scene":
                 d_ = scene_time * p["w"] / scene_w
-                items.append({"kind": "scene", "name": p["name"], "start": round(tt, 3), "dur": round(d_, 3), "seg": sid})
+                items.append({"kind": "scene", "name": p["name"], "start": round(tt, 3), "dur": round(d_, 3), "seg": sid, "offset": p.get("offset", 0)})
             else:
                 d_ = (p["b"] - p["a"]) / rate
                 keys, cl = camera(p["meta"], p["a"], p["b"], rate)
@@ -192,29 +218,11 @@ def main():
                 clicks += [[round(tt + c[0], 3), c[1], c[2]] for c in cl]
                 tt += d_
                 last_clip = p
+                if p is [q for q in plan if q["kind"] == "clip"][-1] and hold > 0.05:
+                    tt = add_hold(items, p, hold, tt, sid)
+                    hold = 0.0
                 continue
             tt += d_
-        if clip_src and hold > 0.05:
-            p = last_clip; at = max(p["a"], p["b"] - .08)
-            # an active hold: tour the page's highlighted elements (boxes, then click targets), one every ~2 s
-            pts = []
-            for e in p["meta"]["events"]:
-                if e["type"] == "box" and e.get("w"):
-                    z = max(1.12, min(1.5, 2300 / max(1, e["w"]), 1250 / max(1, e["h"])))
-                    pts.append((e["x"] + e["w"] / 2, e["y"] + e["h"] / 2, z))
-                elif e["type"] == "click" and e.get("x"):
-                    pts.append((e["x"], e["y"], 1.45))
-            pts = pts[-4:] or [(1280, 720, 1.15)]
-            keys = [{"t": 0, "zoom": 1.0, "cx": 1280, "cy": 720}]
-            k, i_ = 0.0, 0
-            while k < hold - .3:
-                x, y, z = pts[i_ % len(pts)]
-                keys.append({"t": round(k + .6, 3), "zoom": round(z, 3), "cx": x, "cy": y})
-                keys.append({"t": round(min(hold, k + 2.0), 3), "zoom": round(z * 1.04, 3), "cx": x, "cy": y})
-                k += 2.0; i_ += 1
-            items.append({"kind": "clip", "name": f"{p['name']}.mp4", "start": round(tt, 3), "dur": round(hold, 3), "from": round(at, 3),
-                          "rate": 0.02, "keys": keys, "url": HOST + URL.get(p["name"], "/"), "seg": sid, "still": True})
-            tt += hold
         t += dur
     total = round(t + 1.0, 3)
     data = {"fps": 30, "total": total, "segments": segs, "items": items, "clicks": clicks}

@@ -3,7 +3,7 @@
  * the narration. Everything is driven by data/tour.json (built by APAAR-VIDEO/tour/plan_tour.py). */
 import React from "react";
 import { Audio, Video } from "@remotion/media";
-import { AbsoluteFill, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { Finish, Fonts, Ground } from "./components/Base";
 import { CountedTwice, HiddenExcess, LetterAndWait, OneRegister } from "./components/CollageBeats";
 import tour from "./data/tour.json";
@@ -12,7 +12,7 @@ import { S5Architecture, S6Close } from "./scenes/S5S6";
 import { C, FONT, MONO, clamp, ease } from "./theme";
 
 type Key = { t: number; zoom: number; cx: number; cy: number };
-type Item = { kind: "clip" | "scene"; name: string; start: number; dur: number; from?: number; rate?: number; keys?: Key[]; url?: string; seg: string; still?: boolean };
+type Item = { kind: "clip" | "scene"; name: string; start: number; dur: number; offset?: number; from?: number; rate?: number; keys?: Key[]; url?: string; seg: string; still?: boolean };
 type Sent = { text: string; t0: number; t1: number };
 type Seg = { id: string; section: string; title: string; role: string; points: string[]; start: number; dur: number; voice: string | null; voiceStart: number; text: string; sentences: Sent[] };
 const T = tour as unknown as { fps: number; total: number; segments: Seg[]; items: Item[]; clicks: [number, number, number][] };
@@ -160,7 +160,7 @@ const Captions: React.FC = () => {
   const t = fr / FPS;
   const phrases: Sent[] = [];
   for (const s of T.segments) for (const x of s.sentences) {
-    const words = x.text.split(" "), chunks: string[] = []; let cur: string[] = [];
+    const words = x.text.replace("S-I-H two six two six three", "SIH26263").split(" "), chunks: string[] = []; let cur: string[] = [];
     words.forEach((w, i) => { cur.push(w); if (cur.length >= 9 || (/[,;:]$/.test(w) && cur.length >= 4) || i === words.length - 1) { chunks.push(cur.join(" ")); cur = []; } });
     const total = chunks.reduce((a, c) => a + c.length, 0); let tt = x.t0;
     for (const c of chunks) { const d = (x.t1 - x.t0) * c.length / total; phrases.push({ text: c, t0: tt, t1: tt + d }); tt += d; }
@@ -186,6 +186,8 @@ const ROWS: [string, string][] = [
 ];
 export const WhyBetter: React.FC = () => {
   const fr = useCurrentFrame();
+  const { durationInFrames: D } = useVideoConfig();
+  const step = Math.max(24, (D * 0.82) / ROWS.length);   // one row per spoken sentence
   return (
     <Ground>
       <div style={{ position: "absolute", left: 140, top: 110, fontFamily: FONT, color: C.white }}>
@@ -195,8 +197,8 @@ export const WhyBetter: React.FC = () => {
       <div style={{ position: "absolute", left: 140, top: 270, width: 1640, fontFamily: FONT }}>
         <div style={{ display: "flex", fontSize: 22, color: C.mist, marginBottom: 14 }}><div style={{ width: 760 }}>Today</div><div>With the register</div></div>
         {ROWS.map(([a, b], i) => {
-          const k = interpolate(fr, [12 + i * 32, 30 + i * 32], [0, 1], { ...clamp, easing: ease.out });
-          const k2 = interpolate(fr, [22 + i * 32, 40 + i * 32], [0, 1], { ...clamp, easing: ease.out });
+          const k = interpolate(fr, [6 + i * step, 22 + i * step], [0, 1], { ...clamp, easing: ease.out });
+          const k2 = interpolate(fr, [14 + i * step, 32 + i * step], [0, 1], { ...clamp, easing: ease.out });
           return (
             <div key={i} style={{ display: "flex", alignItems: "center", height: 104, borderTop: "1px solid rgba(255,255,255,.12)" }}>
               <div style={{ width: 760, fontSize: 32, color: "#b8c3d8", opacity: k, transform: `translateX(${(1 - k) * -20}px)` }}>
@@ -231,7 +233,9 @@ export const Tour: React.FC = () => {
       {T.items.map((it, i) => {
         return (
           <Sequence key={i} from={f(it.start)} durationInFrames={Math.max(1, f(it.dur))}>
-            {it.kind === "scene" ? React.createElement(SCENES[it.name] ?? WhyBetter) : <Shot it={it} />}
+            {it.kind === "scene"
+              ? <Sequence from={-f(it.offset ?? 0)} layout="none">{React.createElement(SCENES[it.name] ?? WhyBetter)}</Sequence>
+              : <Shot it={it} />}
           </Sequence>
         );
       })}
