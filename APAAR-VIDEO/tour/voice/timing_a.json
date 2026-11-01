@@ -238,5 +238,125 @@
     "end": 11.49
    }
   ]
+ },
+ "k00_meet": {
+  "duration": 9.525,
+  "sentences": [
+   {
+    "text": "Meet Student Ananya.",
+    "start": 0.0,
+    "end": 1.108
+   },
+   {
+    "text": "This year she joined an engineering college, one of lakhs of students admitted to AICTE-approved institutions.",
+    "start": 1.268,
+    "end": 6.946
+   },
+   {
+    "text": "But today, oversight sees only totals.",
+    "start": 7.106,
+    "end": 9.525
+   }
+  ]
+ },
+ "k01_problem": {
+  "duration": 13.427,
+  "sentences": [
+   {
+    "text": "A college reports how many it admitted, not who.",
+    "start": 0.0,
+    "end": 2.492
+   },
+   {
+    "text": "Excess admissions hide inside those numbers.",
+    "start": 2.652,
+    "end": 5.092
+   },
+   {
+    "text": "The same student can be enrolled at two colleges at once.",
+    "start": 5.252,
+    "end": 7.938
+   },
+   {
+    "text": "And when an employer asks if Student Ananya's degree is real, the answer is a letter and a long wait.",
+    "start": 8.098,
+    "end": 13.427
+   }
+  ]
+ },
+ "k03_upload": {
+  "duration": 10.202,
+  "sentences": [
+   {
+    "text": "Student Ananya's college, Kaveri Institute, uploads this year's admissions as a spreadsheet.",
+    "start": 0.0,
+    "end": 5.418
+   },
+   {
+    "text": "Before anything is saved, twenty-six validation rules check every single row.",
+    "start": 5.578,
+    "end": 10.202
+   }
+  ]
+ },
+ "k09_share": {
+  "duration": 9.169,
+  "sentences": [
+   {
+    "text": "Now, Student Ananya.",
+    "start": 0.0,
+    "end": 1.322
+   },
+   {
+    "text": "Her college issues a signed enrolment record.",
+    "start": 1.482,
+    "end": 3.619
+   },
+   {
+    "text": "She decides exactly which details to share, and the register gives her a token and a QR code.",
+    "start": 3.779,
+    "end": 9.169
+   }
+  ]
+ },
+ "k10_verify": {
+  "duration": 10.267,
+  "sentences": [
+   {
+    "text": "An employer pastes the token.",
+    "start": 0.0,
+    "end": 1.51
+   },
+   {
+    "text": "Six checks run in order, from the signature to revocation, and only the details Student Ananya chose are shown.",
+    "start": 1.67,
+    "end": 7.39
+   },
+   {
+    "text": "Change a single value, and verification fails.",
+    "start": 7.55,
+    "end": 10.267
+   }
+  ]
+ },
+ "k11_consent": {
+  "duration": 8.834,
+  "sentences": [
+   {
+    "text": "Employers can also send a request.",
+    "start": 0.0,
+    "end": 2.011
+   },
+   {
+    "text": "Student Ananya sees it, sees exactly what would be shared, and allows it.",
+    "start": 2.171,
+    "end": 6.147
+   },
+   {
+    "text": "Only then does the employer get an answer.",
+    "start": 6.307,
+    "end": 8.834
+   }
+  ]
  }
 }
