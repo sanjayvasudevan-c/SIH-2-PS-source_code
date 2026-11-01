@@ -91,7 +91,7 @@ class Collector:
 
 
 async def vu_loop(client: httpx.AsyncClient, base_url: str, stage_label_ref: list, stop_at: list,
-                   collector: Collector, vu_id: int):
+                   collector: Collector, vu_id: int, live_vus: list):
     while time.monotonic() < stop_at[0]:
         path = pick_endpoint()
         t0 = time.monotonic()
@@ -108,8 +108,11 @@ async def vu_loop(client: httpx.AsyncClient, base_url: str, stage_label_ref: lis
         except Exception as e:  # noqa: BLE001
             error = type(e).__name__
         latency_ms = (time.monotonic() - t0) * 1000
-        await collector.add({"t": time.time(), "vu": vu_id, "stage": stage_label_ref[0], "endpoint": path,
-                              "status": status, "latency_ms": round(latency_ms, 1), "error": error})
+        # live_vus[0] is the true concurrent VU count at request time (not the VU's own id,
+        # which only ever increases and would overstate concurrency once VUs have been
+        # recycled across stages)
+        await collector.add({"t": time.time(), "vu": vu_id, "live_vus": live_vus[0], "stage": stage_label_ref[0],
+                              "endpoint": path, "status": status, "latency_ms": round(latency_ms, 1), "error": error})
         await asyncio.sleep(random.uniform(0.1, 0.4))
 
 
@@ -122,6 +125,7 @@ async def run(base_url: str, stages: list[Stage], out_dir: Path, insecure: bool 
         stage_label_ref = [stages[0].label]
         stop_at = [time.monotonic() + 10 ** 9]
         next_vu_id = 0
+        live_vus = [0]  # true concurrent VU count, updated on every add/remove; see vu_loop
         aborted = False
         overall_start = time.monotonic()
         for stage in stages:
@@ -138,10 +142,12 @@ async def run(base_url: str, stages: list[Stage], out_dir: Path, insecure: bool 
                 want = current + int(delta * (i + 1) / steps)
                 while len(tasks) < want:
                     vid = next_vu_id; next_vu_id += 1
-                    tasks[vid] = asyncio.create_task(vu_loop(client, base_url, stage_label_ref, stop_at, collector, vid))
+                    tasks[vid] = asyncio.create_task(vu_loop(client, base_url, stage_label_ref, stop_at, collector, vid, live_vus))
+                    live_vus[0] = len(tasks)
                 while len(tasks) > want:
                     vid, t = tasks.popitem()
                     t.cancel()
+                    live_vus[0] = len(tasks)
                 await asyncio.sleep(0.2)
             # hold for the remainder of the stage, checking the circuit breaker every second
             while time.monotonic() < stage_end:
@@ -189,7 +195,7 @@ def summarize(rows: list[dict], out_dir: Path, aborted: bool):
             lat = [r["latency_ms"] for r in bucket]
             errs = sum(1 for r in bucket if r["error"])
             f.write(f"{sec},{len(bucket)},{len(bucket)},{errs},{100*errs/len(bucket):.2f},"
-                    f"{pct(lat,50):.1f},{pct(lat,95):.1f},{pct(lat,99):.1f},{max(r['vu'] for r in bucket)+1}\n")
+                    f"{pct(lat,50):.1f},{pct(lat,95):.1f},{pct(lat,99):.1f},{max(r['live_vus'] for r in bucket)}\n")
 
     by_stage = defaultdict(list)
     for r in rows:
@@ -205,7 +211,7 @@ def summarize(rows: list[dict], out_dir: Path, aborted: bool):
             "p50_ms": round(pct(lat, 50), 1), "p90_ms": round(pct(lat, 90), 1),
             "p95_ms": round(pct(lat, 95), 1), "p99_ms": round(pct(lat, 99), 1),
             "max_ms": round(max(lat), 1), "min_ms": round(min(lat), 1),
-            "max_concurrent_vus": max(r["vu"] for r in bucket) + 1,
+            "max_concurrent_vus": max(r["live_vus"] for r in bucket),
         }
     status_counts = defaultdict(int)
     for r in rows:
@@ -222,7 +228,7 @@ def summarize(rows: list[dict], out_dir: Path, aborted: bool):
         "latency_ms": {"p50": round(pct(all_lat, 50), 1), "p90": round(pct(all_lat, 90), 1),
                        "p95": round(pct(all_lat, 95), 1), "p99": round(pct(all_lat, 99), 1),
                        "max": round(max(all_lat), 1), "mean": round(statistics.mean(all_lat), 1)},
-        "peak_concurrent_vus": max(r["vu"] for r in rows) + 1,
+        "peak_concurrent_vus": max(r["live_vus"] for r in rows),
         "status_breakdown": dict(status_counts),
         "by_stage": stage_summary,
     }
