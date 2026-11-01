@@ -1,49 +1,4 @@
 {
- "k00_meet": {
-  "duration": 9.391,
-  "sentences": [
-   {
-    "text": "Meet Ananya.",
-    "start": 0.0,
-    "end": 0.973
-   },
-   {
-    "text": "This year she joined an engineering college, one of lakhs of students admitted to AICTE-approved institutions.",
-    "start": 1.133,
-    "end": 6.812
-   },
-   {
-    "text": "But today, oversight sees only totals.",
-    "start": 6.972,
-    "end": 9.391
-   }
-  ]
- },
- "k01_problem": {
-  "duration": 12.882,
-  "sentences": [
-   {
-    "text": "A college reports how many it admitted, not who.",
-    "start": 0.0,
-    "end": 2.492
-   },
-   {
-    "text": "Excess admissions hide inside those numbers.",
-    "start": 2.652,
-    "end": 5.092
-   },
-   {
-    "text": "The same student can be enrolled at two colleges at once.",
-    "start": 5.252,
-    "end": 7.938
-   },
-   {
-    "text": "And when an employer asks if Ananya's degree is real, the answer is a letter and a long wait.",
-    "start": 8.098,
-    "end": 12.882
-   }
-  ]
- },
  "k02_idea": {
   "duration": 8.706,
   "sentences": [
@@ -56,21 +11,6 @@
     "text": "Every enrolment is an individual record, linked to the student's APAAR ID, and every number is counted from those records.",
     "start": 2.358,
     "end": 8.706
-   }
-  ]
- },
- "k03_upload": {
-  "duration": 9.289,
-  "sentences": [
-   {
-    "text": "Ananya's college, Kaveri Institute, uploads this year's admissions as a spreadsheet.",
-    "start": 0.0,
-    "end": 4.944
-   },
-   {
-    "text": "Before anything is saved, twenty-six validation rules check every single row.",
-    "start": 5.104,
-    "end": 9.289
    }
   ]
  },
@@ -171,66 +111,6 @@
     "text": "Nothing is merged automatically.",
     "start": 12.289,
     "end": 13.986
-   }
-  ]
- },
- "k09_share": {
-  "duration": 8.829,
-  "sentences": [
-   {
-    "text": "Now Ananya.",
-    "start": 0.0,
-    "end": 0.983
-   },
-   {
-    "text": "Her college issues a signed enrolment record.",
-    "start": 1.143,
-    "end": 3.279
-   },
-   {
-    "text": "She decides exactly which details to share, and the register gives her a token and a QR code.",
-    "start": 3.439,
-    "end": 8.829
-   }
-  ]
- },
- "k10_verify": {
-  "duration": 9.771,
-  "sentences": [
-   {
-    "text": "An employer pastes the token.",
-    "start": 0.0,
-    "end": 1.51
-   },
-   {
-    "text": "Six checks run in order, from the signature to revocation, and only the details Ananya chose are shown.",
-    "start": 1.67,
-    "end": 6.895
-   },
-   {
-    "text": "Change a single value, and verification fails.",
-    "start": 7.055,
-    "end": 9.771
-   }
-  ]
- },
- "k11_consent": {
-  "duration": 8.254,
-  "sentences": [
-   {
-    "text": "Employers can also send a request.",
-    "start": 0.0,
-    "end": 2.011
-   },
-   {
-    "text": "Ananya sees it, sees exactly what would be shared, and allows it.",
-    "start": 2.171,
-    "end": 5.567
-   },
-   {
-    "text": "Only then does the employer get an answer.",
-    "start": 5.727,
-    "end": 8.254
    }
   ]
  },

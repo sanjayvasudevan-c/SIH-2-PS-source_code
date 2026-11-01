@@ -5,7 +5,7 @@
   "title": "One student among lakhs",
   "role": "",
   "points": [],
-  "text": "Meet Ananya. This year she joined an engineering college, one of lakhs of students admitted to AICTE-approved institutions. But today, oversight sees only totals."
+  "text": "Meet Student Ananya. This year she joined an engineering college, one of lakhs of students admitted to AICTE-approved institutions. But today, oversight sees only totals."
  },
  {
   "id": "k01_problem",
@@ -13,7 +13,7 @@
   "title": "Totals hide students",
   "role": "",
   "points": [],
-  "text": "A college reports how many it admitted, not who. Excess admissions hide inside those numbers. The same student can be enrolled at two colleges at once. And when an employer asks if Ananya's degree is real, the answer is a letter and a long wait."
+  "text": "A college reports how many it admitted, not who. Excess admissions hide inside those numbers. The same student can be enrolled at two colleges at once. And when an employer asks if Student Ananya's degree is real, the answer is a letter and a long wait."
  },
  {
   "id": "k02_idea",
@@ -33,7 +33,7 @@
    "26 validation rules on every row",
    "Nothing saved until checked"
   ],
-  "text": "Ananya's college, Kaveri Institute, uploads this year's admissions as a spreadsheet. Before anything is saved, twenty-six validation rules check every single row."
+  "text": "Student Ananya's college, Kaveri Institute, uploads this year's admissions as a spreadsheet. Before anything is saved, twenty-six validation rules check every single row."
  },
  {
   "id": "k04_fix",
@@ -121,7 +121,7 @@
  },
  {
   "id": "k09_share",
-  "section": "Chapter 3 · Ananya",
+  "section": "Chapter 3 · Student Ananya",
   "title": "Her record, her choice",
   "role": "Student",
   "points": [
@@ -129,7 +129,7 @@
    "She picks the details",
    "Token and QR code"
   ],
-  "text": "Now Ananya. Her college issues a signed enrolment record. She decides exactly which details to share, and the register gives her a token and a QR code."
+  "text": "Now, Student Ananya. Her college issues a signed enrolment record. She decides exactly which details to share, and the register gives her a token and a QR code."
  },
  {
   "id": "k10_verify",
@@ -141,7 +141,7 @@
    "Only her chosen details",
    "One changed value fails"
   ],
-  "text": "An employer pastes the token. Six checks run in order, from the signature to revocation, and only the details Ananya chose are shown. Change a single value, and verification fails."
+  "text": "An employer pastes the token. Six checks run in order, from the signature to revocation, and only the details Student Ananya chose are shown. Change a single value, and verification fails."
  },
  {
   "id": "k11_consent",
@@ -153,7 +153,7 @@
    "Student allows or declines",
    "Result only after consent"
   ],
-  "text": "Employers can also send a request. Ananya sees it, sees exactly what would be shared, and allows it. Only then does the employer get an answer."
+  "text": "Employers can also send a request. Student Ananya sees it, sees exactly what would be shared, and allows it. Only then does the employer get an answer."
  },
  {
   "id": "k12_minor",

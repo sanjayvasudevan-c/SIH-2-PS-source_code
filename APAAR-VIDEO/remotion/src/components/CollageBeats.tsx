@@ -7,15 +7,21 @@ import { BUST, CREAM, Cut, ENVELOPE, FACADE, FLAP, Field, HAND, Piece, useStopFr
 /** 01 Excess hides inside the total: figures stack behind a blank card and spill past a saffron limit. */
 export const HiddenExcess: React.FC = () => {
   const id = "c1";
-  const behind = [
-    // [x, y, at]: rows of students behind the card, the last ones rising above the limit strip
+  // tucked: rows meant to sit behind/under the limit strip at rest (only their heads peek above it)
+  const tucked = [
     [560, 560, 22], [700, 560, 26], [840, 560, 30], [980, 560, 34], [1120, 560, 38],
     [630, 470, 46], [770, 470, 50], [910, 470, 54], [1050, 470, 58],
+  ];
+  // overflow: the ones that must read as clearly above the line. Rendered AFTER the strip (so the
+  // strip never slices a rising figure mid-flight into a disconnected fragment) and with a short
+  // entrance hop from just below their own position, rather than from off-canvas, so they never
+  // transit through the strip's band at all.
+  const overflow = [
     [640, 300, 66], [760, 250, 70], [880, 220, 74], [1000, 260, 78], [1120, 310, 82], [820, 120, 90], [960, 140, 94],
   ];
   return (
     <Field color="#B5481E" id={id}>
-      {behind.map(([x, y, at], i) => (
+      {tucked.map(([x, y, at], i) => (
         <Piece key={i} id={id} at={at} from={[0, 700]} rot={i % 2 ? 5 : -5} x={x} y={y} scale={0.62}>
           <Cut id={id} d={BUST} fill={`url(#${id}-dots${i % 3 === 0 ? "-fine" : ""})`} />
         </Piece>
@@ -24,6 +30,11 @@ export const HiddenExcess: React.FC = () => {
       <Piece id={id} at={0} from={[-2200, 0]} rot={0} x={360} y={455}>
         <Cut id={id} d="M0 0 H1200 V22 H0 Z" fill="#f37021" keyline={5} />
       </Piece>
+      {overflow.map(([x, y, at], i) => (
+        <Piece key={`o${i}`} id={id} at={at} dur={6} from={[0, 160]} rot={i % 2 ? 5 : -5} x={x} y={y} scale={0.62}>
+          <Cut id={id} d={BUST} fill={`url(#${id}-dots${i % 3 === 0 ? "-fine" : ""})`} />
+        </Piece>
+      ))}
       {/* the blank declared total card */}
       <Piece id={id} at={8} from={[0, -1000]} rot={-4} x={560} y={520}>
         <Cut id={id} d="M0 0 H800 V420 H0 Z" fill="#f6efe0" />
