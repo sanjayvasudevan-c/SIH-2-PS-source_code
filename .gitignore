@@ -29,3 +29,4 @@ APAAR-VIDEO/tour/qa/*.png
 APAAR-VIDEO/remotion/public/tour/
 scripts/loadtest/results/
 scripts/loadtest/smoke*/
+scripts/loadtest/results_600/
